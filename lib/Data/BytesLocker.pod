@@ -1,0 +1,197 @@
+# PODNAME: Data::BytesLocker
+# ABSTRACT: Guarded storage for sensitive data
+
+=head1 SYNOPSIS
+
+    use Crypt::NaCl::Sodium qw(:utils);
+
+    # lock by default
+    $Data::BytesLocker::DEFAULT_LOCKED = 1;
+
+    # some sensitive data read from external sources, eg. database
+    my $password = ...;
+
+    my $password_locker = Data::BytesLocker->new($password, wipe => 1);
+
+    # $password now is overwritten with null bytes
+    $password =~ /^\0+$/ or die;
+
+    # as requested locker is locked
+    $password_locker->is_locked or die;
+
+    # dies with: "Unlock BytesLocker object before accessing the data"
+    print "password: ", $password_locker, "\n";
+
+    # unlock the data
+    $password_locker->unlock;
+
+    # prints the password
+    print "password: $password_locker\n";
+
+    # Crypt::NaCl::Sodium functions and methods return binary data locked in Data::BytesLocker objects
+    my $random_password = random_bytes( 32 );
+
+    # we wanted locked by default
+    $random_password->unlock;
+
+    # helper function to convert into hexadecimal string
+    print "random password: ", $random_password->to_hex, "\n";
+
+    # always lock the data once done using it
+    $password_locker->lock;
+    $random_password->lock;
+
+=head1 DESCRIPTION
+
+Heartbleed was a serious vulnerability in OpenSSL. The ability to read
+past the end of a buffer is a serious bug, but what
+made it even worse is the fact that secret data could be
+disclosed by doing so.
+
+In order to mitigate the impact of similar bugs, C<Data::BytesLocker> provides
+heap allocation functions for storing sensitive data.
+
+These are not general-purpose allocation functions. In particular, they
+are slower than regular scalars, and they
+require 3 or 4 extra pages of virtual memory (usually between 12-16kb extra
+memory will be used).
+
+The stored data is placed at the end of a page boundary,
+immediately followed by a guard page. As a result, accessing
+memory past the end of the region will immediately terminate the
+application.
+
+A canary is also placed right before the stored data.
+Modification of this canary are detected when trying to free
+the allocated region, and also cause the
+application to immediately terminate.
+
+An additional guard page is placed before this canary. In a
+Heartbleed-like scenario, this guard page is likely to be read
+before the actual data, and this access will cause the application
+to terminate instead of leaking sensitive data.
+
+The allocated region is filled with C<0xd0> bytes in order
+to help catch bugs due to initialized data.
+
+On operating systems supporting C<MAP_NOCORE> or C<MADV_DONTDUMP>,
+the memory allocated this way will also not be part of core dumps and can help
+avoid the data being swapped to disk.
+
+=head1 METHODS
+
+=head2 new
+
+    my $locker = Data::BytesLocker->new($data, wipe => 1 );
+
+Returns object that stores the input C<$data> in a protected memory location.
+
+If the optional parameter C<wipe> is given and is true, then the input C<$data>
+variable will be overwritten with null bytes.
+
+Returned C<$locker> object will contain the data that cannot be modified and if
+the object is locked it cannot be accessed as well.
+
+C<Data::BytesLocker> object when used in string context return the protected
+data.  See L</OVERLOADED OPERATIONS> for more details.
+
+=head2 lock
+
+    $locker->lock();
+
+When called makes the data stored inaccessible. It cannot be read or written,
+but the data are preserved.
+
+=head2 unlock
+
+    $locker->unlock();
+
+When called makes the data stored accessible for read access only.
+
+=head2 is_locked
+
+    if ( $locker->is_locked ) {
+        $locker->unlock;
+    }
+
+Returns true if the C<$locker> object is locked, false otherwise.
+
+=head2 length
+
+    my $data_length = $locker->length();
+
+Returns the length of protected bytes.
+
+=head2 to_hex
+
+    my $hexencoded = $locker->to_hex();
+
+Returns the protected data converted into a hexadecimal string.
+
+B<NOTE:> the C<$locker> object must be unlocked.
+
+Returns regular scalar.
+
+=head1 OVERLOADED OPERATIONS
+
+Only operations listed below are supported.
+
+=head2 stringification
+
+    print "Password: $locker\n";
+
+Returns the protected data as regular scalar.
+
+=head2 stringwise equality
+
+    if ( $locker eq $expected ) {
+        print "matches\n";
+    }
+
+    if ( $locker ne $expected ) {
+        print "does not match\n";
+    }
+
+The C<eq> and C<ne> operations are overloaded and allow to compare the
+C<$locker> object with variable of equal length.
+
+=head2 boolean context
+
+    if ( $locker ) {
+        print "locker has some non-zero length data\n";
+    }
+
+    if ( ! $locker ) {
+        print "locker has some zero length data\n";
+    }
+
+The C<bool> and C<!> operations are overloaded and allow to check if the
+C<$locker> object contains the data at least one byte long.
+
+=head2 concatenation
+
+    my $kv = "password:". $locker;
+
+The concatenation operator C<.> is overloaded and allows to create a new
+C<Data::BytesLocker> object that is a result of joining the data together.
+
+=head2 repetition
+
+    my $tripled_data = $locker x 3;
+
+The repetition operator C<x> is overloaded and allowto create a new
+C<Data::BytesLocker> object that is a result of repeating the protected data
+specified number of times.
+
+=head1 SEE ALSO
+
+=over 4
+
+=item * L<Crypt::NaCl::Sodium>
+
+=item * <Securing memory allocations|http://doc.libsodium.org/helpers/memory_management.html>
+
+=back
+
+=cut
+
