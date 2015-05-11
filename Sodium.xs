@@ -380,7 +380,6 @@ static CryptNaClSodiumHashSha256Stream* GetHashSha256Stream(pTHX_ SV* sv)
 
     for (mg = SvMAGIC(SvRV(sv)); mg; mg = mg->mg_moremagic) {
 	if (mg->mg_type == PERL_MAGIC_ext && mg->mg_virtual == &vtbl_hash_sha256) {
-        //printf("GetHashSha256Stream: %p\n", (CryptNaClSodiumHashSha256Stream *)mg->mg_ptr);
 	    return (CryptNaClSodiumHashSha256Stream *)mg->mg_ptr;
 	}
     }
@@ -4644,16 +4643,7 @@ DESTROY(self)
         DataBytesLocker* bl = GetBytesLocker(aTHX_ self);
     PPCODE:
     {
-        //printf("BL->DESTROY\n");
-
-        //printf("before free bytes\n");
         sodium_free( bl->bytes );
-
-        //printf("before bytes = NULL\n");
-        bl->bytes = NULL;
-
-        //printf("before free(bl)\n");
         Safefree(bl);
     }
-
 

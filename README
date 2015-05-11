@@ -63,11 +63,22 @@ SYNOPSIS
         ##########################
         ## Utilities
 
+        # convert binary data to hexadecimal
         my $hex = bin2hex($bin);
+
+        # convert hexadecimal to binary
         my $bin = hex2bin($hex);
+
+        # constant time comparision of strings
         memcmp($a, $b, $length ) or die '$a ne $b';
+
+        # overwrite with null bytes
         memzero($a, $b, ...);
+
+        # generate random number
         my $num = random_number($upper_bound);
+
+        # generate random bytes
         my $bytes = random_bytes($count);
 
         ##########################

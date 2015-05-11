@@ -25,8 +25,11 @@
     # unlock the data
     $password_locker->unlock;
 
+    # as requested locker is unlocked
+    $password_locker->is_locked and die;
+
     # prints the password
-    print "password: $password_locker\n";
+    print "password: ", $password_locker, "\n";
 
     # Crypt::NaCl::Sodium functions and methods return binary data locked in Data::BytesLocker objects
     my $random_password = random_bytes( 32 );

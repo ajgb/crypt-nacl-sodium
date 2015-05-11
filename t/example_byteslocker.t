@@ -29,8 +29,11 @@ like($@, qr/^Unlock BytesLocker object before accessing the data/, "cannot acces
 # unlock the data
 ok($password_locker->unlock, "can unlock");
 
+# as requested locker is unlocked
+ok(! $password_locker->is_locked, "is_locked");
+
 # prints the password
-is("password: $password_locker", "password: a secret password", "can access");
+is($password_locker, "a secret password", "can access");
 
 # Crypt::NaCl::Sodium functions and methods return binary data locked in Data::BytesLocker objects
 my $random_password = random_bytes( 32 );
