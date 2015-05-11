@@ -1,5 +1,7 @@
 Revision history for Perl extension Crypt::NaCl::Sodium.
 
 {{$NEXT}}
+
+0.01   2015-05-12 00:43:48
 	Initial version.
 
