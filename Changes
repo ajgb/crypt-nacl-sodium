@@ -1,6 +1,8 @@
 Revision history for Perl extension Crypt::NaCl::Sodium.
 
 {{$NEXT}}
+
+0.03   2015-05-12 22:26:26
     Add Alien::Sodium to configure requirements
     Correct label for crypto_scalarmult->base
 
