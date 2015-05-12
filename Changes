@@ -1,6 +1,8 @@
 Revision history for Perl extension Crypt::NaCl::Sodium.
 
 {{$NEXT}}
+
+0.02   2015-05-12 01:33:29
     Add provides for indexing .pod files
     Minor documentaton fixes
 
