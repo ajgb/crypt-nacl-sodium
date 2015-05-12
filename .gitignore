@@ -1,2 +1,4 @@
 .build
 Crypt-NaCl-Sodium-*
+.*.sw*
+
