@@ -3,7 +3,7 @@ NAME
     encryption, decryption, signatures, password hashing and more
 
 VERSION
-    version 0.01
+    version 0.02
 
 SYNOPSIS
         use Crypt::NaCl::Sodium qw( :utils );
