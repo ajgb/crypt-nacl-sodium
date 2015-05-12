@@ -26,7 +26,7 @@
     # MAC guarantees message integrity and authenticity
     $mac = $crypto_auth->mac( $msg, $key );
 
-    # we can now send unecrypted message to Bob
+    # we can now send unencrypted message to Bob
     send_to( Bob => { msg => $msg } );
 
     # and MAC confirming that Alice has wrote it
@@ -82,7 +82,7 @@ the message to those who share the secret key.
 
 For the same message the same key will always product the same output.
 
-Un-ecrypted messages and their MACs can be made public, while the key should
+Unencrypted messages and their MACs can be made public, while the key should
 remain secret.
 
 =head1 METHODS

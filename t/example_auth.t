@@ -32,7 +32,7 @@ my ($master_key);
     $mac = $crypto_auth->mac( $msg, $key );
     ok($mac, "mac generated");
 
-    # we can now send unecrypted message to Bob
+    # we can now send unencrypted message to Bob
     send_to( Bob => { msg => $msg } );
 
     # and MAC confirming that Alice has wrote it

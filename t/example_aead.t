@@ -33,7 +33,7 @@ my ($master_key);
     # Alice's message to Bob
     $msg = "Hi Bob!";
 
-    # unecrypted metadata
+    # unencrypted metadata
     $additional_data = "greeting";
 
     # Bob will need it to decrypt and verify secret message

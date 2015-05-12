@@ -68,7 +68,7 @@
     $decrypted_msg = $crypto_box->decrypt( $secret, $nonce, $a_key, $b_skey );
 
     # Bob is going to send a lot of messages to Alice, so we speed up the
-    # encryption and decryption by precalculating the shared key
+    # encryption and decryption by pre-calculating the shared key
     $b_precal_key = $crypto_box->beforenm( $a_key, $b_skey );
 
     # now it is time to reply
@@ -93,7 +93,7 @@
     $mac    = receive_for( Alice => 'mac' );
     $secret = receive_for( Alice => 'secret' );
 
-    # Alice also precalculates the shared key
+    # Alice also pre-calculates the shared key
     $a_precal_key = $crypto_box->beforenm( $b_key, $a_skey );
 
     # we have now all information required to decrypt message
@@ -252,7 +252,7 @@ Returns L<Data::BytesLocker> object.
     my ($mac, $ciphertext) = $crypto_box->encrypt_afternm($msg, $nonce,
         $shared_key);
 
-Encrypts the plaintext message using given C<$nonce> and precalculated
+Encrypts the plaintext message using given C<$nonce> and pre-calculated
 C<$shared_key> (as returned by L</beforenm>).
 
 In scalar context works in combined mode, where MAC and encrypted message are stored
@@ -322,7 +322,7 @@ Returns L<Data::BytesLocker> object.
         print "Decrypted message: $msg\n";
     }
 
-Verify and decrypt the secret message using given C<$nonce> and precalculated
+Verify and decrypt the secret message using given C<$nonce> and pre-calculated
 C<$shared_key> (as returned by L</beforenm>).
 
 Function croaks if the verification fails. Otherwise returns the decrypted message.
@@ -345,7 +345,7 @@ Returns L<Data::BytesLocker> object.
     }
 
 Verify and decrypt the secret message C<$ciphertext> authenticated with C<$mac>
-using given C<$nonce> and precalculated C<$shared_key> (as returned by
+using given C<$nonce> and pre-calculated C<$shared_key> (as returned by
 L</beforenm>).
 
 Function croaks if the verification fails. Otherwise returns the decrypted message.
@@ -384,7 +384,7 @@ Returns the length of seed key.
 
     my $shared_key_length = $crypto_box->BEFORENMBYTES;
 
-Returns the length of precalculated shared key.
+Returns the length of pre-calculated shared key.
 
 =head2 MACBYTES
 

@@ -167,7 +167,7 @@ Returns L<Data::BytesLocker> objects.
 
 =head2 seal
 
-    # combined mode - MAC and unecrypted message stored together
+    # combined mode - MAC and unencrypted message stored together
     my $sealed = $crypto_sign->seal($msg, $secret_key);
 
 Seals the plaintext message using given C<$secret_key>.
@@ -181,7 +181,7 @@ Returns L<Data::BytesLocker> object.
     # detached mode - MAC of the message returned
     my $mac = $crypto_sign->mac($msg, $secret_key);
 
-Returns the MAC without attaching a copy of the orginal message to it.
+Returns the MAC without attaching a copy of the original message to it.
 
 The length of the C<$mac> is up to the value of L</BYTES>.
 
