@@ -79,7 +79,7 @@ B<NOTE:> keep the secret key confidential.
 
 Returns L<Data::BytesLocker> objects.
 
-=head2 public_key
+=head2 base
 
     my $public_key = $crypto_scalarmult->base( $secret_key );
 

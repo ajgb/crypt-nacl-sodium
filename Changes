@@ -2,6 +2,7 @@ Revision history for Perl extension Crypt::NaCl::Sodium.
 
 {{$NEXT}}
     Add Alien::Sodium to configure requirements
+    Correct label for crypto_scalarmult->base
 
 0.02   2015-05-12 01:33:29
     Add provides for indexing .pod files
