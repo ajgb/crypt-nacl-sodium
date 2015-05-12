@@ -182,7 +182,7 @@ C<Data::BytesLocker> object that is a result of joining the data together.
 
     my $tripled_data = $locker x 3;
 
-The repetition operator C<x> is overloaded and allowto create a new
+The repetition operator C<x> is overloaded and allow to create a new
 C<Data::BytesLocker> object that is a result of repeating the protected data
 specified number of times.
 
@@ -192,7 +192,7 @@ specified number of times.
 
 =item * L<Crypt::NaCl::Sodium>
 
-=item * <Securing memory allocations|http://doc.libsodium.org/helpers/memory_management.html>
+=item * L<Securing memory allocations|http://doc.libsodium.org/helpers/memory_management.html>
 
 =back
 
