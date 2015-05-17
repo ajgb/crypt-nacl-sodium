@@ -1,6 +1,8 @@
 Revision history for Perl extension Crypt::NaCl::Sodium.
 
 {{$NEXT}}
+
+0.04   2015-05-18 00:31:37
     BSDs do not come with mempcpy
     Fix some compiler warnings
 
