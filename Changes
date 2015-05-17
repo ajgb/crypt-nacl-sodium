@@ -1,6 +1,8 @@
 Revision history for Perl extension Crypt::NaCl::Sodium.
 
 {{$NEXT}}
+    BSDs do not come with mempcpy
+    Fix some compiler warnings
 
 0.03   2015-05-12 22:26:26
     Add Alien::Sodium to configure requirements

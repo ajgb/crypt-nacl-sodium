@@ -271,7 +271,7 @@ static SV * DataBytesLocker2SV(pTHX_ DataBytesLocker *bl) {
 
     sv_bless(obj, gv_stashpv("Data::BytesLocker", 0));
 
-    if ( default_locked = get_sv("Data::BytesLocker::DEFAULT_LOCKED", 0) ) {
+    if ( (default_locked = get_sv("Data::BytesLocker::DEFAULT_LOCKED", 0)) ) {
         if ( SvTRUE(default_locked) ) {
             int rc = sodium_mprotect_noaccess((void *)bl->bytes);
 
@@ -2874,7 +2874,7 @@ init(self, ...)
             char * key;
 
             for ( i = 1; i < items; i += 2 ) {
-                key = (unsigned char *)SvPV(ST(i), keylen);
+                key = (char *)SvPV(ST(i), keylen);
                 if ( keylen == 3 && strnEQ(key, "key", 3) ) {
                     key_buf = (unsigned char *)SvPV(ST(i+1), key_len);
                     if ( key_len < crypto_generichash_KEYBYTES_MIN || key_len > crypto_generichash_KEYBYTES_MAX ) {
@@ -2964,7 +2964,7 @@ final(self, ...)
             char * key;
 
             for ( i = 1; i < items; i += 2 ) {
-                key = (unsigned char *)SvPV(ST(i), keylen);
+                key = (char *)SvPV(ST(i), keylen);
                 if ( keylen == 5 && strnEQ(key, "bytes", 5) ) {
                     bytes =  SvUV(ST(i+1));
                     if ( bytes < crypto_generichash_BYTES_MIN || bytes > crypto_generichash_BYTES_MAX ) {
@@ -3161,7 +3161,7 @@ key(self, passphrase, salt, ... )
             char * key;
 
             for ( i = 3; i < items; i += 2 ) {
-                key = (unsigned char *)SvPV(ST(i), keylen);
+                key = (char *)SvPV(ST(i), keylen);
                 if ( keylen == 8 && strnEQ(key, "opslimit", 8) ) {
                     opslimit = (unsigned long long)SvUV(ST(i+1));
                     if ( opslimit < 1 ) {
@@ -3222,7 +3222,7 @@ str(self, passphrase, ... )
             char * key;
 
             for ( i = 2; i < items; i += 2 ) {
-                key = (unsigned char *)SvPV(ST(i), keylen);
+                key = (char *)SvPV(ST(i), keylen);
                 if ( keylen == 8 && strnEQ(key, "opslimit", 8) ) {
                     opslimit =  SvUV(ST(i+1));
                     if ( opslimit < 1 ) {
@@ -4073,9 +4073,6 @@ bytes(self, length, nonce, key)
         }
 
         bytes_len = SvUV(length);
-        if ( bytes_len < 0 ) {
-            croak("Invalid length");
-        }
 
         nonce_buf = (unsigned char *)SvPV(nonce, nonce_len);
         if ( nonce_len != nonce_size ) {
@@ -4228,9 +4225,6 @@ xor_ic(self, msg, nonce, ic, key)
         }
 
         bc = SvUV(ic);
-        if ( bc < 0 ) {
-            croak("Invalid ic");
-        }
 
         nonce_buf = (unsigned char *)SvPV(nonce, nonce_len);
         if ( nonce_len != nonce_size ) {
@@ -4319,7 +4313,7 @@ _overload_mult(self, other, swapped)
     INIT:
         DataBytesLocker *bl;
         unsigned int count = 0;
-        unsigned char * pos;
+        unsigned int cur = 0;
     OVERLOAD: x
     CODE:
     {
@@ -4331,9 +4325,8 @@ _overload_mult(self, other, swapped)
 
         bl = InitDataBytesLocker(aTHX_ sbl->length * count);
 
-        pos = bl->bytes;
         while(count--) {
-            pos = mempcpy(pos, sbl->bytes, sbl->length);
+            memcpy(bl->bytes + sbl->length * cur++, sbl->bytes, sbl->length);
         }
 
         RETVAL = DataBytesLocker2SV(aTHX_ bl);
@@ -4365,10 +4358,10 @@ _overload_concat(self, other, swapped)
         bl = InitDataBytesLocker(aTHX_ sbl->length + buf_len);
 
         if ( SvTRUE(swapped) ) {
-            mempcpy(mempcpy(bl->bytes, buf, buf_len), sbl->bytes, sbl->length);
+            memcpy(memcpy(bl->bytes, buf, buf_len) + buf_len, sbl->bytes, sbl->length);
         }
         else {
-            mempcpy(mempcpy(bl->bytes, sbl->bytes, sbl->length), buf, buf_len);
+            memcpy(memcpy(bl->bytes, sbl->bytes, sbl->length) + sbl->length, buf, buf_len);
         }
 
         RETVAL = DataBytesLocker2SV(aTHX_ bl);
