@@ -1,6 +1,8 @@
 Revision history for Perl extension Crypt::NaCl::Sodium.
 
 {{$NEXT}}
+
+0.05   2015-05-19 22:37:36
     Statically linked libsodium.a
 
 0.04   2015-05-18 00:31:37
