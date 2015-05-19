@@ -4,14 +4,25 @@ use warnings;
 
 use ExtUtils::MakeMaker;
 use Alien::Sodium;
+use Config;
+use Text::ParseWords qw(shellwords);
+
+my $lib_ext = $Config{lib_ext};
 
 my $libsodium = Alien::Sodium->new;
 
-my $cflags = $libsodium->cflags;
-my $libs   = $libsodium->libs;
+my $libsodium_lib = "libsodium${lib_ext}";
+my $libsodium_path;
+my @dirs = map { s/^-L//g; $_ } grep { /^-L/ } shellwords($libsodium->libs);
+for my $dir ( @dirs ) {
+    if ( -e "$dir/libsodium${lib_ext}" ) {
+        $libsodium_path = "$dir/$libsodium_lib";
+        last;
+    }
+}
 
-$libs =~ s/ -lsodium//g;
-$libs .= ' -Wl,-Bstatic -l:libsodium.a -Wl,-Bdynamic';
+die "Is Alien::Sodium available? Could not locate $libsodium_lib in @dirs\n"
+    unless $libsodium_path;
 
 my %WriteMakefileArgs = (
   ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
@@ -27,8 +38,8 @@ my %WriteMakefileArgs = (
   },
   "DISTNAME" => "Crypt-NaCl-Sodium",
   "EXE_FILES" => [],
-  "LIBS"      => [$libs],
-  "INC"       => join(' ', "-I.", $cflags),
+  "MYEXTLIB"  => $libsodium_path,
+  "INC"       => join(' ', "-I.", $libsodium->cflags),
   "LICENSE" => "perl",
   "NAME" => "Crypt::NaCl::Sodium",
   "PREREQ_PM" => {

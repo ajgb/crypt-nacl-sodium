@@ -5,7 +5,6 @@ use warnings;
 package Crypt::NaCl::Sodium;
 
 use Carp qw( croak );
-use Alien::Sodium;
 use Sub::Exporter;
 
 require XSLoader;
