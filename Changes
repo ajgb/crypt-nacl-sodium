@@ -1,6 +1,8 @@
 Revision history for Perl extension Crypt::NaCl::Sodium.
 
 {{$NEXT}}
+
+0.06   2015-05-20 22:37:45
     Build changes to locate libsodium.a if pkg-config fails
     Fix tests failure on OpenBSD which comes with Math::BigInt v1.89_01
     Fix warning on older perls that warned on ref as lvalue in substr
