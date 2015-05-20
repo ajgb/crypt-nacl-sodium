@@ -34,6 +34,7 @@ my $msg = join('', map { chr($_) } 0,    0,    0,    0,    0,    0,    0,    0, 
 
 my $xored = $crypto_stream->xor($msg, $nonce, $key);
 my $xored_hex = bin2hex($xored);
+my $s_xored = "$xored";
 
 my $expected = join('', map { chr($_) }
     0x8e,0x99,0x3b,0x9f,0x48,0x68,0x12,0x73,
@@ -55,7 +56,7 @@ my $expected = join('', map { chr($_) }
     0xe3,0x55,0xa5
 );
 
-is(substr($xored, 32), $expected, "Got expected hash of xored: $xored_hex");
+is(substr($s_xored, 32), $expected, "Got expected hash of xored: $xored_hex");
 
 done_testing();
 

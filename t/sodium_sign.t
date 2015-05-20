@@ -40,13 +40,14 @@ for ($i = 0; $i < scalar @tests; $i++) {
 
     my $sealed = $crypto_sign->seal( $msg_bin, $skpk );
     ok($sealed, "message $t sealed");
+    my $s_sealed = "$sealed";
 
-    is(bin2hex(substr($sealed, 0, $crypto_sign->BYTES)), $test->{sig}, "signature $t correct");
+    is(bin2hex(substr($s_sealed, 0, $crypto_sign->BYTES)), $test->{sig}, "signature $t correct");
 
     my $opened = $crypto_sign->open( $sealed, $pk_bin );
     is(bin2hex($opened), $test->{msg}, "message $t opened");
 
-    my $mod_sealed = substr($sealed, 0, 32) . add_l(substr($sealed, 32));
+    my $mod_sealed = substr($s_sealed, 0, 32) . add_l(substr($s_sealed, 32));
     isnt(bin2hex($sealed), bin2hex($mod_sealed), "modified sealed message");
 
     my $mod_opened = $crypto_sign->open( $mod_sealed, $pk_bin );
