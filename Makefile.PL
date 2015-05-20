@@ -27,7 +27,7 @@ die "Is Alien::Sodium available? Could not locate $libsodium_lib in @dirs\n"
 my %WriteMakefileArgs = (
   ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
       (ABSTRACT_FROM  => 'lib/Crypt/NaCl/Sodium.pm', # retrieve abstract from module
-       AUTHOR         => 'Alex J. G. Burzyński <ajgb\@cpan.org>') : ()),
+       AUTHOR         => "Alex J. G. Burzy\x{144}ski <ajgb\@cpan.org>") : ()),
   "BUILD_REQUIRES" => {
     "ExtUtils::CBuilder" => 0,
   },
