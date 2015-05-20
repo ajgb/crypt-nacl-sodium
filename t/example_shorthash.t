@@ -22,6 +22,13 @@ for my $file ( @files ) {
     SKIP: {
         eval { require Math::BigInt; };
         skip "Math::BigInt not installed", 1 if $@;
+        eval { require version; };
+        skip "version not installed", 1 if $@;
+
+        my $min_version = version->parse( "1.992" );
+        my $v = version->parse( Math::BigInt->VERSION );
+
+        skip "Math::BigInt older then v1.992", 1 if $v < $min_version;
 
         my $bi = Math::BigInt->from_hex($mac->to_hex);
         is($bi, "5792544769733959861", "mac converted to int");
