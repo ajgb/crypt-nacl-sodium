@@ -4,6 +4,8 @@ use warnings;
 
 use ExtUtils::MakeMaker;
 use Alien::Sodium;
+use File::Spec ();
+use File::ShareDir ();
 use Config;
 use Text::ParseWords qw(shellwords);
 
@@ -14,6 +16,10 @@ my $libsodium = Alien::Sodium->new;
 my $libsodium_lib = "libsodium${lib_ext}";
 my $libsodium_path;
 my @dirs = map { s/^-L//g; $_ } grep { /^-L/ } shellwords($libsodium->libs);
+
+# pkg-config may fail, so try harder to locate libsodium.a
+push @dirs, File::Spec->catdir( File::ShareDir::dist_dir("Alien-Sodium"), 'lib' );
+
 for my $dir ( @dirs ) {
     if ( -e "$dir/libsodium${lib_ext}" ) {
         $libsodium_path = "$dir/$libsodium_lib";
@@ -32,6 +38,8 @@ my %WriteMakefileArgs = (
     "ExtUtils::CBuilder" => 0,
   },
   "CONFIGURE_REQUIRES" => {
+    "File::ShareDir" => 0,
+    "File::Spec" => 0,
     "Alien::Sodium" => "1.0.3.0",
     "ExtUtils::MakeMaker" => "0",
     "ExtUtils::CBuilder" => 0,
