@@ -1,6 +1,9 @@
 Revision history for Perl extension Crypt::NaCl::Sodium.
 
 {{$NEXT}}
+    Allow to specify library and include directory paths
+        if pre-installed libsodium is to be used [gh#1]
+    Minor documentaton changes
 
 0.06   2015-05-20 22:37:45
     Build changes to locate libsodium.a if pkg-config fails

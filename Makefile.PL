@@ -3,25 +3,46 @@ use strict;
 use warnings;
 
 use ExtUtils::MakeMaker;
-use Alien::Sodium;
-use File::Spec ();
-use File::ShareDir ();
+use Getopt::Std;
 use Config;
-use Text::ParseWords qw(shellwords);
+
+
+my $aliensodium_version = '1.0.3.0';
+
+my %opts;
+getopt('L:I:', \%opts) or die usage();
+
+my @dirs;
+my $include_dirs;
+
+if ( $opts{L} && $opts{I} ) {
+    @dirs = $opts{L};
+    $include_dirs = "-I$opts{I}";
+
+    die "Could not locate sodium.h in $opts{I}\n"
+        unless -e "$opts{I}/sodium.h";
+} else {
+    require Alien::Sodium;
+    require File::Spec;
+    require File::ShareDir;
+    require Text::ParseWords;
+
+    my $libsodium = Alien::Sodium->new;
+
+    $include_dirs = $libsodium->cflags;
+
+    @dirs = map { s/^-L//g; $_ } grep { /^-L/ } Text::ParseWords::shellwords($libsodium->libs);
+
+    # pkg-config may fail, so try harder to locate libsodium.a
+    push @dirs, File::Spec->catdir( File::ShareDir::dist_dir("Alien-Sodium"), 'lib' );
+}
 
 my $lib_ext = $Config{lib_ext};
-
-my $libsodium = Alien::Sodium->new;
-
 my $libsodium_lib = "libsodium${lib_ext}";
 my $libsodium_path;
-my @dirs = map { s/^-L//g; $_ } grep { /^-L/ } shellwords($libsodium->libs);
-
-# pkg-config may fail, so try harder to locate libsodium.a
-push @dirs, File::Spec->catdir( File::ShareDir::dist_dir("Alien-Sodium"), 'lib' );
 
 for my $dir ( @dirs ) {
-    if ( -e "$dir/libsodium${lib_ext}" ) {
+    if ( -e "$dir/$libsodium_lib" ) {
         $libsodium_path = "$dir/$libsodium_lib";
         last;
     }
@@ -40,18 +61,18 @@ my %WriteMakefileArgs = (
   "CONFIGURE_REQUIRES" => {
     "File::ShareDir" => 0,
     "File::Spec" => 0,
-    "Alien::Sodium" => "1.0.3.0",
+    "Alien::Sodium" => $aliensodium_version,
     "ExtUtils::MakeMaker" => "0",
     "ExtUtils::CBuilder" => 0,
   },
   "DISTNAME" => "Crypt-NaCl-Sodium",
   "EXE_FILES" => [],
   "MYEXTLIB"  => $libsodium_path,
-  "INC"       => join(' ', "-I.", $libsodium->cflags),
+  "INC"       => join(' ', "-I.", $include_dirs),
   "LICENSE" => "perl",
   "NAME" => "Crypt::NaCl::Sodium",
   "PREREQ_PM" => {
-    "Alien::Sodium" => '1.0.3.0',
+    "Alien::Sodium" => $aliensodium_version,
     "Carp" => 0,
     "Sub::Exporter" => 0,
     "XSLoader" => 0,
@@ -68,7 +89,7 @@ my %WriteMakefileArgs = (
 );
 
 my %FallbackPrereqs = (
-  "Alien::Sodium" => "1.0.3.0",
+  "Alien::Sodium" => $aliensodium_version,
   "Carp" => 0,
   "Sub::Exporter" => 0,
   "Test::More" => 0,
@@ -88,5 +109,7 @@ delete $WriteMakefileArgs{CONFIGURE_REQUIRES}
 
 WriteMakefile(%WriteMakefileArgs);
 
-
-
+sub usage {
+    return "Example usage:\n"
+        ."\tperl $0 -L /usr/lib/x86_64-linux-gnu/ -I /usr/include/sodium/\n"
+}
