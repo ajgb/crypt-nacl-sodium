@@ -121,8 +121,8 @@ Method returns true if message has been verified, false otherwise.
 
 =head1 ADVANCED USAGE
 
-Single pass and streaming API keyed message authentication using HMAC-SHA256,
-HMAC-SHA512 and HMAC-SHA512/256 are described below.
+Single pass and streaming API keyed message authentication using I<HMAC-SHA-256>,
+I<HMAC-SHA-512> and I<HMAC-SHA-512/256> are described below.
 
 =head2 HMAC-SHA-256
 
@@ -188,7 +188,7 @@ B<NOTE:> this function supports a key of arbitrary length. Key larger then the
 block size gets reduced to C<sha256($key)>.
 
 Returns C<Crypt::NaCl::Sodium::auth::hmacsha256stream> object which encapsulates
-the computation state of the HMAC-SHA-256 algorithm.
+the computation state of the I<HMAC-SHA-256> algorithm.
 
 =head4 clone
 
@@ -280,7 +280,7 @@ B<NOTE:> this function supports a key of arbitrary length. Key larger then the
 block size gets reduced to C<sha512($key)>.
 
 Returns C<Crypt::NaCl::Sodium::auth::hmacsha512stream> object which encapsulates
-the computation state of the HMAC-SHA-512 algorithm.
+the computation state of the I<HMAC-SHA-512> algorithm.
 
 =head4 clone
 
@@ -372,7 +372,7 @@ B<NOTE:> this function supports a key of arbitrary length. Key larger then the
 block size gets reduced to C<sha512($key)>.
 
 Returns C<Crypt::NaCl::Sodium::auth::hmacsha512256stream> object which encapsulates
-the computation state of the HMAC-SHA-512/256 algorithm.
+the computation state of the I<HMAC-SHA-512/256> algorithm.
 
 =head4 clone
 
@@ -412,19 +412,19 @@ Returns the length of key.
 
     my $key256_length = $crypto_auth->HMACSHA256_KEYBYTES;
 
-Returns the length of key for HMAC-SHA-256 algorithm.
+Returns the length of key for I<HMAC-SHA-256> algorithm.
 
 =head2 HMACSHA512_KEYBYTES
 
     my $key512_length = $crypto_auth->HMACSHA512_KEYBYTES;
 
-Returns the length of key for HMAC-SHA-512 algorithm.
+Returns the length of key for I<HMAC-SHA-512> algorithm.
 
 =head2 HMACSHA512256_KEYBYTES
 
     my $key512256_length = $crypto_auth->HMACSHA512256_KEYBYTES;
 
-Returns the length of key for HMAC-SHA-512/256 algorithm.
+Returns the length of key for I<HMAC-SHA-512/256> algorithm.
 
 =head2 BYTES
 
@@ -436,19 +436,19 @@ Returns the length of MAC.
 
     my $mac256_length = $crypto_auth->HMACSHA256_BYTES;
 
-Returns the length of MAC for HMAC-SHA-256 algorithm.
+Returns the length of MAC for I<HMAC-SHA-256> algorithm.
 
 =head2 HMACSHA512_BYTES
 
     my $mac512_length = $crypto_auth->HMACSHA512_BYTES;
 
-Returns the length of MAC for HMAC-SHA-512 algorithm.
+Returns the length of MAC for I<HMAC-SHA-512> algorithm.
 
 =head2 HMACSHA512256_BYTES
 
     my $mac512256_length = $crypto_auth->HMACSHA512256_BYTES;
 
-Returns the length of MAC for HMAC-SHA-512/256 algorithm.
+Returns the length of MAC for I<HMAC-SHA-512/256> algorithm.
 
 =head1 SECURITY MODEL
 

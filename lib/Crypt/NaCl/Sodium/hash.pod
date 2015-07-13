@@ -74,7 +74,7 @@ better choice.
 
     my $hash256 = $crypto_hash->sha256($msg);
 
-Generates SHA-256 hash of the given C<$msg>.
+Generates I<SHA-256> hash of the given C<$msg>.
 
 The length of the C<$sha256> equals L</SHA256_BYTES>.
 
@@ -98,7 +98,7 @@ Multi-part computation is also supported.
 Creates a context for multi-part computation.
 
 Returns C<Crypt::NaCl::Sodium::hash::sha256stream> object which encapsulates
-the computation state of the SHA-256 algorithm.
+the computation state of the I<SHA-256> algorithm.
 
 =head4 clone
 
@@ -130,7 +130,7 @@ Returns L<Data::BytesLocker> object.
 
     my $hash512 = $crypto_hash->sha512($msg);
 
-Generates SHA-512 hash of the given C<$msg>.
+Generates I<SHA-512> hash of the given C<$msg>.
 
 The length of the C<$sha512> equals L</SHA512_BYTES>.
 
@@ -154,7 +154,7 @@ Multi-part computation is also supported.
 Creates a context for multi-part computation.
 
 Returns C<Crypt::NaCl::Sodium::hash::sha512stream> object which encapsulates
-the computation state of the SHA-512 algorithm.
+the computation state of the I<SHA-512> algorithm.
 
 =head4 clone
 
@@ -188,13 +188,13 @@ Returns L<Data::BytesLocker> object.
 
     my $sha256_length = $crypto_hash->SHA256_BYTES;
 
-Returns the length of SHA-256 hash.
+Returns the length of I<SHA-256> hash.
 
 =head2 SHA512_BYTES
 
     my $sha512_length = $crypto_hash->SHA512_BYTES;
 
-Returns the length of SHA-512 hash.
+Returns the length of I<SHA-512> hash.
 
 =head1 SECURITY MODEL
 
