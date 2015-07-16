@@ -110,5 +110,5 @@ WriteMakefile(%WriteMakefileArgs);
 
 sub usage {
     return "Example usage:\n"
-        ."\tperl $0 -L /usr/lib/x86_64-linux-gnu/ -I /usr/include/sodium/\n"
+        ."\tperl $0 -L /usr/lib/x86_64-linux-gnu/ -I /usr/include/\n"
 }
