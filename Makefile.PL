@@ -6,8 +6,7 @@ use ExtUtils::MakeMaker;
 use Getopt::Std;
 use Config;
 
-
-my $aliensodium_version = '1.0.3.0';
+my $aliensodium_version = '1.0.3.1';
 
 my %opts;
 getopt('L:I:', \%opts) or die usage();
@@ -33,7 +32,7 @@ if ( $opts{L} && $opts{I} ) {
 
     @dirs = map { s/^-L//g; $_ } grep { /^-L/ } Text::ParseWords::shellwords($libsodium->libs);
 
-    # pkg-config may fail, so try harder to locate libsodium.a
+    # NOTE: since Alien::Sodium v1.0.3.1 it may not be needed anymore
     push @dirs, File::Spec->catdir( File::ShareDir::dist_dir("Alien-Sodium"), 'lib' );
 }
 
