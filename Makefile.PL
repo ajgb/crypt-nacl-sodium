@@ -34,6 +34,9 @@ if ( $opts{L} && $opts{I} ) {
 
     # NOTE: since Alien::Sodium v1.0.3.1 it may not be needed anymore
     push @dirs, File::Spec->catdir( File::ShareDir::dist_dir("Alien-Sodium"), 'lib' );
+
+    # some smokers still cannot find libsodium.a
+    push @dirs, map { "$_/.libs/" } grep { /_alien/ } @dirs;
 }
 
 my $lib_ext = $Config{lib_ext};
