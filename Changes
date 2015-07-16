@@ -1,6 +1,8 @@
 Revision history for Perl extension Crypt::NaCl::Sodium.
 
 {{$NEXT}}
+
+0.08   2015-07-17 00:15:13
     Require Alien::Sodium v1.0.3.1
 
 0.07   2015-07-13 22:37:05
