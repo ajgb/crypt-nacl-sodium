@@ -710,7 +710,7 @@ bin2hex(bin_sv)
         if ( hex == NULL ) {
             croak("Could not allocate memory");
         }
-        sodium_bin2hex(hex, hex_len, bin, bin_len);
+        sodium_bin2hex(hex, hex_len + 1, bin, bin_len);
 
         RETVAL = newSVpvn((const char * const)hex, hex_len);
     OUTPUT:
@@ -4619,7 +4619,7 @@ to_hex(self)
         if ( hex == NULL ) {
             croak("Could not allocate memory");
         }
-        sodium_bin2hex(hex, hex_len, sbl->bytes, sbl->length);
+        sodium_bin2hex(hex, hex_len + 1, sbl->bytes, sbl->length);
 
         RETVAL = newSVpvn((const char * const)hex, hex_len);
     }
