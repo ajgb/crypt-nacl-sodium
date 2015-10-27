@@ -637,6 +637,41 @@ memcmp(left, right, length = 0)
     }
 
 void
+compare(left, right, length = 0)
+    SV * left
+    SV * right
+    unsigned long length
+    INIT:
+        unsigned char * left_buf;
+        unsigned char * right_buf;
+        STRLEN left_len;
+        STRLEN right_len;
+    PPCODE:
+    {
+        if ( GIMME_V == G_VOID ) {
+            XSRETURN_EMPTY;
+        }
+
+        left_buf = (unsigned char *)SvPV(left, left_len);
+        right_buf = (unsigned char *)SvPV(right, right_len);
+        if ( length == 0 ) {
+            if ( left_len != right_len ) {
+                croak("Variables of unequal length cannot be automatically compared. Please provide the length argument");
+            }
+            length = left_len;
+        } else {
+            if ( length > left_len ) {
+                croak("First argument is shorter then requested length");
+            }
+            if ( length > right_len ) {
+                croak("Second argument is shorter then requested length");
+            }
+        }
+
+        XSRETURN_IV( sodium_memcmp(left_buf, right_buf, length) );
+    }
+
+void
 memzero(...)
     INIT:
         unsigned char * buf;

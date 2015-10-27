@@ -14,7 +14,7 @@ XSLoader::load('Crypt::NaCl::Sodium', $Crypt::NaCl::Sodium::{VERSION} ?
 
 my @funcs = qw(
     bin2hex hex2bin
-    memcmp memzero
+    memcmp compare memzero
     random_bytes
     random_number
 );
@@ -230,6 +230,9 @@ __END__
     # constant time comparision of strings
     memcmp($a, $b, $length ) or die '$a ne $b';
 
+    # constant time comparision of large numbers
+    compare($x, $y, $length ) == -1 and print '$x < $y';
+
     # overwrite with null bytes
     memzero($a, $b, ...);
 
@@ -409,6 +412,21 @@ found or when C<max_len> bytes have been written.
     memcmp($a, $b, $length ) or die '$a ne $b';
 
 Compares strings in constant-time. Returns true if they match, false otherwise.
+
+The argument C<$length> is optional if variables are of the same length. Otherwise it is
+required and cannot be greater then the length of the shorter of compared variables.
+
+=head2 compare
+
+    # constant time comparision of large numbers
+    compare($x, $y, $length ) == -1 and print '$x < $y';
+
+A constant-time version of L</memcmp>, useful to compare nonces and counters
+in little-endian format, that plays well with L</increment>.
+
+Returns C<-1> if C<$x> is lower then C<$y>, C<0> if C<$x> and C<$y> are
+identical, or C<1> if C<$x> is greater then C<$y>. Both C<$x> and C<$y> are
+assumed to be numbers encoded in little-endian format.
 
 The argument C<$length> is optional if variables are of the same length. Otherwise it is
 required and cannot be greater then the length of the shorter of compared variables.

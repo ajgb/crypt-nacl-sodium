@@ -33,24 +33,43 @@ is(hex2bin( '41:42:43', max_len => 2 ), 'A',
 
 my ($a, $b) = ( "abc", "abC");
 
-ok( ! memcmp($a, $b), "'abc' and 'abC' differ");
+ok( ! memcmp($a, $b), "memcmp: 'abc' and 'abC' differ");
+is( compare($a, $b), -1, "compare: 'abc' < 'abC'");
 
 eval {
     my $res = memcmp("ab", "abc");
 };
-like($@, qr/^Variables of unequal length/, "variables of unequal length cannot be compared without length specified");
+like($@, qr/^Variables of unequal length/, "memcmp: variables of unequal length cannot be compared without length specified");
 
-ok( memcmp("ab", "abc", 2), "first two chars are equal");
+eval {
+    my $res = compare("ab", "abc");
+};
+like($@, qr/^Variables of unequal length/, "compare: variables of unequal length cannot be compared without length specified");
+
+
+ok( memcmp("ab", "abc", 2), "memcmp: first two chars are equal");
+is( compare("ab", "abc", 2), 0, "compare: first two chars are equal");
 
 eval {
     my $res = memcmp("ab", "abc", 3);
 };
-like($@, qr/^First argument is shorter/, "length=3 > ab");
+like($@, qr/^First argument is shorter/, "memcmp: length=3 > ab");
+
+eval {
+    my $res = compare("ab", "abc", 3);
+};
+like($@, qr/^First argument is shorter/, "compare: length=3 > ab");
 
 eval {
     my $res = memcmp("abcd", "abc", 4);
 };
-like($@, qr/^Second argument is shorter/, "length=4 > abc");
+like($@, qr/^Second argument is shorter/, "memcmp: length=4 > abc");
+
+
+eval {
+    my $res = compare("abcd", "abc", 4);
+};
+like($@, qr/^Second argument is shorter/, "compare: length=4 > abc");
 
 memzero($a, $b);
 is(length($a), 3, "memzero(a) preserves length");
