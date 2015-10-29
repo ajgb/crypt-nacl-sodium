@@ -672,6 +672,33 @@ compare(left, right, length = 0)
     }
 
 void
+increment(number, length = 0)
+    SV * number
+    unsigned long length
+    INIT:
+        unsigned char * number_buf;
+        STRLEN len;
+    PPCODE:
+    {
+        if (sv_derived_from(number, "Data::BytesLocker")) {
+            DataBytesLocker* sbl = GetBytesLocker(aTHX_ number);
+            if ( sbl->locked ) {
+                croak("Unlock BytesLocker object before accessing the data");
+            }
+            number_buf = sbl->bytes;
+            len = sbl->length;
+        }
+        else {
+            number_buf = (unsigned char *)SvPV(number, len);
+        }
+
+        sodium_increment(number_buf, len);
+
+        XSRETURN_EMPTY;
+    }
+
+
+void
 memzero(...)
     INIT:
         unsigned char * buf;

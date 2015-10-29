@@ -15,6 +15,7 @@ XSLoader::load('Crypt::NaCl::Sodium', $Crypt::NaCl::Sodium::{VERSION} ?
 my @funcs = qw(
     bin2hex hex2bin
     memcmp compare memzero
+    increment
     random_bytes
     random_number
 );
@@ -446,6 +447,16 @@ Returns an unpredictable number between 0 and optional C<$upper_bound>
 (excluded).
 If C<$upper_bound> is not specified the maximum value is C<0xffffffff>
 (included).
+
+=head2 increment
+
+    increment($nonce);
+
+Increments an arbitrary long unsigned number. Function runs in contstant-time
+for a given length of number amd considers the number to be encoded in
+little-endian format.
+
+This function can be used to increment nonces.
 
 =head2 random_bytes
 
