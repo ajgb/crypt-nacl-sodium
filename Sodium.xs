@@ -3944,6 +3944,13 @@ CHACHA20_NONCEBYTES(...)
         RETVAL
 
 unsigned int
+CHACHA20_IETF_NONCEBYTES(...)
+    CODE:
+        RETVAL = crypto_stream_chacha20_IETF_NONCEBYTES;
+    OUTPUT:
+        RETVAL
+
+unsigned int
 CHACHA20_KEYBYTES(...)
     CODE:
         RETVAL = crypto_stream_chacha20_KEYBYTES;
@@ -4022,6 +4029,7 @@ nonce(self, ...)
         chacha20_nonce = 1
         salsa20_nonce = 2
         aes128ctr_nonce = 3
+        chacha20_ietf_nonce = 4
     INIT:
         unsigned int nonce_size;
         DataBytesLocker *bl;
@@ -4037,6 +4045,9 @@ nonce(self, ...)
                 break;
             case 3:
                 nonce_size = crypto_stream_aes128ctr_NONCEBYTES;
+                break;
+            case 4:
+                nonce_size = crypto_stream_chacha20_IETF_NONCEBYTES;
                 break;
             default:
                 nonce_size = crypto_stream_NONCEBYTES;
@@ -4084,6 +4095,7 @@ bytes(self, length, nonce, key)
         aes128ctr_bytes = 3
         salsa2012_bytes = 4
         salsa208_bytes = 5
+        chacha20_ietf_bytes = 6
     INIT:
         STRLEN nonce_len;
         STRLEN key_len;
@@ -4128,6 +4140,11 @@ bytes(self, length, nonce, key)
                 key_size = crypto_stream_salsa20_KEYBYTES;
                 bytes_function = &crypto_stream_salsa208;
                 break;
+            case 6:
+                nonce_size = crypto_stream_chacha20_IETF_NONCEBYTES;
+                key_size = crypto_stream_chacha20_KEYBYTES;
+                bytes_function = &crypto_stream_chacha20_ietf;
+                break;
             default:
                 nonce_size = crypto_stream_NONCEBYTES;
                 key_size = crypto_stream_KEYBYTES;
@@ -4167,6 +4184,7 @@ xor(self, msg, nonce, key)
         aes128ctr_xor = 3
         salsa2012_xor = 4
         salsa208_xor = 5
+        chacha20_ietf_xor = 6
     INIT:
         STRLEN msg_len;
         STRLEN nonce_len;
@@ -4212,6 +4230,11 @@ xor(self, msg, nonce, key)
                 key_size = crypto_stream_salsa20_KEYBYTES;
                 xor_function = &crypto_stream_salsa208_xor;
                 break;
+            case 6:
+                nonce_size = crypto_stream_chacha20_IETF_NONCEBYTES;
+                key_size = crypto_stream_chacha20_KEYBYTES;
+                xor_function = &crypto_stream_chacha20_ietf_xor;
+                break;
             default:
                 nonce_size = crypto_stream_NONCEBYTES;
                 key_size = crypto_stream_KEYBYTES;
@@ -4249,6 +4272,7 @@ xor_ic(self, msg, nonce, ic, key)
     ALIAS:
         chacha20_xor_ic = 1
         salsa20_xor_ic = 2
+        chacha20_ietf_xor_ic = 3
     INIT:
         STRLEN msg_len;
         STRLEN nonce_len;
@@ -4279,6 +4303,11 @@ xor_ic(self, msg, nonce, ic, key)
                 nonce_size = crypto_stream_salsa20_NONCEBYTES;
                 key_size = crypto_stream_salsa20_KEYBYTES;
                 xor_ic_function = &crypto_stream_salsa20_xor_ic;
+                break;
+            case 3:
+                nonce_size = crypto_stream_chacha20_IETF_NONCEBYTES;
+                key_size = crypto_stream_chacha20_KEYBYTES;
+                xor_ic_function = &crypto_stream_chacha20_ietf_xor_ic;
                 break;
             default:
                 nonce_size = crypto_stream_NONCEBYTES;

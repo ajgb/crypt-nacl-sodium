@@ -219,7 +219,11 @@ timing attacks.
 
 Internally, I<ChaCha20> works like a block cipher used in counter
 mode. It uses a dedicated 64-bit block counter to avoid
-incrementing the nonce after each block.
+incrementing the 64-bit nonce after each block.
+
+Methods that use C<IETF>-compatible extended nonce (96-bit) and a 32-bit
+counter are also available as L</chacha20_ietf_nonce>, L</chacha20_ietf_bytes>,
+L</chacha20_ietf_xor> and L</chacha20_ietf_xor_ic>.
 
 =head3 chacha20_keygen
 
@@ -230,6 +234,9 @@ Helper method to generate a I<ChaCha20> random key to be used by C<$crypto_strea
 The length of the C<$key> equals L</CHACHA20_KEYBYTES>.
 
 B<NOTE:> keep the key confidential.
+
+B<NOTE:> this method can be used to generate keys used in original version of
+C<ChaCha20> and the C<IETF>-compatible.
 
 Returns L<Data::BytesLocker> object.
 
@@ -302,6 +309,85 @@ Returns L<Data::BytesLocker> object.
 C<chacha20_xor_ic> is similar to L</chacha20_xor> function and encrypts/decrypts the message using
 given C<$nonce> and C<$key>, but adds the ability to set the
 initial value of the block counter to a non-zero value, C<$ic>.
+
+This permits direct access to any block without having to compute the
+previous ones.
+
+The length of the C<$secret/$decrypted_msg> is equal to the length of
+C<$msg/$secret>.
+
+Returns L<Data::BytesLocker> object.
+
+=head3 chacha20_ietf_nonce
+
+    my $nonce_ietf = $crypto_stream->chacha20_ietf_nonce();
+
+Helper method to generate an extended random nonce to be used by C<$crypto_stream>.
+
+The length of the nonce equals L</CHACHA20_IETF_NONCEBYTES>.
+
+If initial value has been passed as the argument, it will then padded with
+C<null> bytes.
+
+    my $counter = 121;
+    my $nonce_ietf = $crypto_stream->chacha20_ietf_nonce($counter);
+    $nonce_ietf =~ /^121\0+$/ or die;
+
+B<NOTE:> nonce does not have to be random nor confidential, but it must never
+be reused with the same key.
+
+Bacause the nonce is 96 bits long, in order to prevent nonce reuse,
+if a key is being reused, it is recommended to increment the
+previous nonce instead of generating a random nonce every time
+a new stream is required.
+
+If random nonce is being used it needs to be provided to the other party to
+allow decryption.
+
+If counter is being used store it alongside the key to avoid accidental reuse on
+the next session. In connection-oriented protocols counter-based nonce could help
+rejecting duplicate messages.
+
+Returns L<Data::BytesLocker> object.
+
+=head3 chacha20_ietf_bytes
+
+    # stream of random bytes
+    my $bytes = $crypto_stream->chacha20_ietf_bytes($num_of_bytes, $nonce_ietf, $key);
+
+Generates unpredictable sequence of C<$num_of_bytes> bytes using given
+C<$nonce_ietf> and C<$key>.
+
+The length of the C<$bytes> equals the value of C<$num_of_bytes>.
+
+Returns L<Data::BytesLocker> object.
+
+=head3 chacha20_ietf_xor
+
+    # encryption
+    my $secret = $crypto_stream->chacha20_ietf_xor($msg, $nonce_ietf, $key);
+
+    # decryption
+    my $decrypted_msg = $crypto_stream->chacha20_ietf_xor($secret, $nonce_ietf, $key);
+
+Encrypts/decrypts the message using given C<$nonce_ietf> and C<$key>.
+
+The length of the C<$secret/$decrypted_msg> is equal to the length of
+C<$msg/$secret>.
+
+Returns L<Data::BytesLocker> object.
+
+=head3 chacha20_ietf_xor_ic
+
+    # encryption
+    my $secret = $crypto_stream->chacha20_ietf_xor_ic($msg, $nonce_ietf, $ic, $key);
+
+    # decryption
+    my $decrypted_msg = $crypto_stream->chacha20_ietf_xor_ic($secret, $nonce_ietf, $ic, $key);
+
+C<chacha20_ietf_xor_ic> is similar to L</chacha20_ietf_xor> function and
+encrypts/decrypts the message using given C<$nonce_ietf> and C<$key>, but adds the
+ability to set the initial value of the block counter to a non-zero value, C<$ic>.
 
 This permits direct access to any block without having to compute the
 previous ones.
@@ -552,6 +638,12 @@ Returns the length of key used by L</XSalsa20> methods.
 
 Returns the length of nonce used by L</ChaCha20> methods.
 
+=head2 CHACHA20_IETF_NONCEBYTES
+
+    my $nonce_length = $crypto_stream->CHACHA20_NONCEBYTES;
+
+Returns the length of nonce used by L</ChaCha20> methods.
+
 =head2 CHACHA20_KEYBYTES
 
     my $key_length = $crypto_stream->CHACHA20_KEYBYTES;
@@ -610,6 +702,8 @@ key-derivation functions.
 - the paper introducing XSalsa20
 
 =item * L<ChaCha, a variant of Salsa20|http://cr.yp.to/chacha/chacha-20080128.pdf>
+
+=item * L<ChaCha20 and Poly1305 for IETF Protocols|https://tools.ietf.org/html/rfc7539>
 
 =item * L<Faster and Timing-Attach Resistant AES-GCM|http://www.chesworkshop.org/ches2009/presentations/01_Session_1/CHES2009_ekasper.pdf>
 
