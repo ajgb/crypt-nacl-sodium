@@ -1695,6 +1695,13 @@ NPUBBYTES(...)
         RETVAL
 
 unsigned int
+IETF_NPUBBYTES(...)
+    CODE:
+        RETVAL = crypto_aead_chacha20poly1305_IETF_NPUBBYTES;
+    OUTPUT:
+        RETVAL
+
+unsigned int
 ABYTES(...)
     CODE:
         RETVAL = crypto_aead_chacha20poly1305_ABYTES;
@@ -1722,25 +1729,36 @@ SV *
 nonce(self, ...)
     SV * self
     PROTOTYPE: $;$
+    ALIAS:
+        ietf_nonce = 1
     INIT:
+        unsigned int nonce_size;
         DataBytesLocker *bl;
     CODE:
         PERL_UNUSED_VAR(self);
+
+        switch(ix) {
+            case 1:
+                nonce_size = crypto_aead_chacha20poly1305_IETF_NPUBBYTES;
+                break;
+            default:
+                nonce_size = crypto_aead_chacha20poly1305_NPUBBYTES;
+        }
 
         if ( items > 2 ) {
             croak("Invalid number of arguments");
         }
 
-        bl = InitDataBytesLocker(aTHX_ crypto_aead_chacha20poly1305_NPUBBYTES);
-
-        if (items == 2) {
+        if (items == 2 ) {
             if ( SvOK(ST(1)) ) {
                 STRLEN prev_nonce_len;
                 unsigned char * prev_nonce = (unsigned char *)SvPV(ST(1), prev_nonce_len);
 
-                if ( prev_nonce_len > bl->length ) {
+                if ( prev_nonce_len > nonce_size ) {
                     croak("Base nonce too long");
                 }
+
+                bl = InitDataBytesLocker(aTHX_ nonce_size);
                 memcpy(bl->bytes, prev_nonce, prev_nonce_len);
                 sodium_memzero(bl->bytes + prev_nonce_len, bl->length - prev_nonce_len);
             }
@@ -1749,14 +1767,14 @@ nonce(self, ...)
             }
         }
         else {
+            bl = InitDataBytesLocker(aTHX_ nonce_size);
             randombytes_buf(bl->bytes, bl->length);
         }
         RETVAL = DataBytesLocker2SV(aTHX_ bl);
     OUTPUT:
         RETVAL
 
-
-SV *
+void
 encrypt(self, msg, adata, nonce, key)
     SV * self
     SV * msg
@@ -1764,6 +1782,8 @@ encrypt(self, msg, adata, nonce, key)
     SV * nonce
     SV * key
     PROTOTYPE: $$$$$
+    ALIAS:
+        ietf_encrypt = 1
     INIT:
         STRLEN msg_len;
         STRLEN adata_len;
@@ -1774,8 +1794,13 @@ encrypt(self, msg, adata, nonce, key)
         unsigned char * adata_buf;
         unsigned char * nonce_buf;
         unsigned char * key_buf;
+        unsigned int nonce_size;
+        unsigned int adlen_size;
+        unsigned int key_size;
+        int (*encrypt_function)(unsigned char *, unsigned long long *, const unsigned char *, unsigned long long, 
+            const unsigned char *, unsigned long long, const unsigned char *, const unsigned char *, const unsigned char *);
         DataBytesLocker *bl;
-    CODE:
+    PPCODE:
     {
         PERL_UNUSED_VAR(self);
 
@@ -1783,13 +1808,27 @@ encrypt(self, msg, adata, nonce, key)
             XSRETURN_EMPTY;
         }
 
+        switch(ix) {
+            case 1:
+                nonce_size = crypto_aead_chacha20poly1305_IETF_NPUBBYTES;
+                key_size = crypto_aead_chacha20poly1305_KEYBYTES;
+                adlen_size = crypto_aead_chacha20poly1305_ABYTES;
+                encrypt_function = &crypto_aead_chacha20poly1305_ietf_encrypt;
+                break;
+            default:
+                nonce_size = crypto_aead_chacha20poly1305_NPUBBYTES;
+                key_size = crypto_aead_chacha20poly1305_KEYBYTES;
+                adlen_size = crypto_aead_chacha20poly1305_ABYTES;
+                encrypt_function = &crypto_aead_chacha20poly1305_encrypt;
+        }
+
         nonce_buf = (unsigned char *)SvPV(nonce, nonce_len);
-        if ( nonce_len != crypto_aead_chacha20poly1305_NPUBBYTES ) {
+        if ( nonce_len != nonce_size ) {
             croak("Invalid nonce");
         }
 
         key_buf = (unsigned char *)SvPV(key, key_len);
-        if ( key_len != crypto_aead_chacha20poly1305_KEYBYTES ) {
+        if ( key_len != key_size ) {
             croak("Invalid key");
         }
 
@@ -1797,39 +1836,46 @@ encrypt(self, msg, adata, nonce, key)
 
         adata_buf = (unsigned char *)SvPV(adata, adata_len);
 
-        enc_len = msg_len + crypto_aead_chacha20poly1305_ABYTES;
+        enc_len = msg_len + adlen_size;
         bl = InitDataBytesLocker(aTHX_ enc_len);
-        crypto_aead_chacha20poly1305_encrypt( bl->bytes, (unsigned long long *)&enc_len, msg_buf, msg_len,
+
+        (*encrypt_function)( bl->bytes, (unsigned long long *)&enc_len, msg_buf, msg_len,
             adata_buf, adata_len, NULL, nonce_buf, key_buf);
 
         bl->bytes[enc_len] = '\0';
         bl->length = enc_len;
-        RETVAL = DataBytesLocker2SV(aTHX_ bl);
+
+        mXPUSHs( DataBytesLocker2SV(aTHX_ bl) );
+        XSRETURN(1);
     }
-    OUTPUT:
-        RETVAL
 
-
-SV *
-decrypt(self, ciphertext, adata, nonce, key)
+void
+decrypt(self, msg, adata, nonce, key)
     SV * self
-    SV * ciphertext
+    SV * msg
     SV * adata
     SV * nonce
     SV * key
     PROTOTYPE: $$$$
+    ALIAS:
+        ietf_decrypt = 1
     INIT:
         STRLEN msg_len;
         STRLEN adata_len;
         STRLEN nonce_len;
         STRLEN key_len;
         STRLEN enc_len;
-        unsigned char * adata_buf;
         unsigned char * msg_buf;
+        unsigned char * adata_buf;
         unsigned char * nonce_buf;
         unsigned char * key_buf;
+        unsigned int nonce_size;
+        unsigned int adlen_size;
+        unsigned int key_size;
+        int (*decrypt_function)(unsigned char *, unsigned long long *, unsigned char *, const unsigned char *, unsigned long long, 
+            const unsigned char *, unsigned long long, const unsigned char *, const unsigned char *);
         DataBytesLocker *bl;
-    CODE:
+    PPCODE:
     {
         PERL_UNUSED_VAR(self);
 
@@ -1837,27 +1883,42 @@ decrypt(self, ciphertext, adata, nonce, key)
             XSRETURN_EMPTY;
         }
 
+        switch(ix) {
+            case 1:
+                nonce_size = crypto_aead_chacha20poly1305_IETF_NPUBBYTES;
+                key_size = crypto_aead_chacha20poly1305_KEYBYTES;
+                adlen_size = crypto_aead_chacha20poly1305_ABYTES;
+                decrypt_function = &crypto_aead_chacha20poly1305_ietf_decrypt;
+                break;
+            default:
+                nonce_size = crypto_aead_chacha20poly1305_NPUBBYTES;
+                key_size = crypto_aead_chacha20poly1305_KEYBYTES;
+                adlen_size = crypto_aead_chacha20poly1305_ABYTES;
+                decrypt_function = &crypto_aead_chacha20poly1305_decrypt;
+        }
+
         nonce_buf = (unsigned char *)SvPV(nonce, nonce_len);
-        if ( nonce_len != crypto_aead_chacha20poly1305_NPUBBYTES ) {
+        if ( nonce_len != nonce_size ) {
             croak("Invalid nonce");
         }
 
         key_buf = (unsigned char *)SvPV(key, key_len);
-        if ( key_len != crypto_aead_chacha20poly1305_KEYBYTES ) {
+        if ( key_len != key_size ) {
             croak("Invalid key");
         }
 
-        msg_buf = (unsigned char *)SvPV(ciphertext, msg_len);
+        msg_buf = (unsigned char *)SvPV(msg, msg_len);
 
         adata_buf = (unsigned char *)SvPV(adata, adata_len);
 
         enc_len = msg_len;
-
         bl = InitDataBytesLocker(aTHX_ enc_len);
-        if ( crypto_aead_chacha20poly1305_decrypt( bl->bytes, (unsigned long long *)&enc_len, NULL, msg_buf, msg_len, adata_buf, adata_len, nonce_buf, key_buf) == 0 ) {
+
+        if ( (*decrypt_function)( bl->bytes, (unsigned long long *)&enc_len, NULL, msg_buf, msg_len, adata_buf, adata_len, nonce_buf, key_buf) == 0 ) {
             bl->bytes[enc_len] = '\0';
             bl->length = enc_len;
-            RETVAL = DataBytesLocker2SV(aTHX_ bl);
+            mXPUSHs( DataBytesLocker2SV(aTHX_ bl) );
+            XSRETURN(1);
         }
         else {
             sodium_free(bl->bytes);
@@ -1865,8 +1926,6 @@ decrypt(self, ciphertext, adata, nonce, key)
             croak("Message forged");
         }
     }
-    OUTPUT:
-        RETVAL
 
 
 MODULE = Crypt::NaCl::Sodium        PACKAGE = Crypt::NaCl::Sodium::box
