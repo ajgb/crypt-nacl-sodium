@@ -36,6 +36,18 @@ my ($a, $b) = ( "abc", "abC");
 ok( ! memcmp($a, $b), "memcmp: 'abc' and 'abC' differ");
 is( compare($a, $b), -1, "compare: 'abc' < 'abC'");
 
+for (1 .. 1000) {
+    my $bin_len = 1 + random_number(1000);
+    my $buf1 = random_bytes($bin_len);
+    my $buf2 = random_bytes($bin_len);
+    my $buf1_rev = reverse $buf1;
+    my $buf2_rev = reverse $buf2;
+    ok(memcmp($buf1_rev, $buf2_rev, $bin_len) * compare($buf1, $buf2, $bin_len) >= 0,
+        "compare correct with length=$bin_len");
+    my $buf2c = $buf2->bytes;
+    is(compare($buf2c, $buf2, $bin_len), 0, "compare() equality correct with length=$bin_len");
+}
+
 eval {
     my $res = memcmp("ab", "abc");
 };

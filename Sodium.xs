@@ -783,7 +783,7 @@ compare(left, right, length = 0)
             }
         }
 
-        XSRETURN_IV( sodium_memcmp(left_buf, right_buf, length) );
+        XSRETURN_IV( sodium_compare(left_buf, right_buf, length) );
     }
 
 void
