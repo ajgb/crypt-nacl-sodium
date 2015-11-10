@@ -1014,7 +1014,7 @@ decrypt(self, ciphertext, nonce, key)
 
         msg_buf = (unsigned char *)SvPV(ciphertext, msg_len);
         if ( msg_len < crypto_secretbox_MACBYTES ) {
-            croak("Invalid input data");
+            croak("Invalid ciphertext");
         }
         enc_len = msg_len - crypto_secretbox_MACBYTES;
 
@@ -1909,6 +1909,10 @@ decrypt(self, msg, adata, nonce, key)
 
         msg_buf = (unsigned char *)SvPV(msg, msg_len);
 
+        if ( msg_len < adlen_size ) {
+            croak("Invalid ciphertext");
+        }
+
         adata_buf = (unsigned char *)SvPV(adata, adata_len);
 
         enc_len = msg_len;
@@ -2316,6 +2320,10 @@ decrypt(self, ciphertext, nonce, sender_pubkey, recipient_seckey)
 
         msg_buf = (unsigned char *)SvPV(ciphertext, msg_len);
 
+        if ( msg_len < crypto_box_MACBYTES ) {
+            croak("Invalid ciphertext");
+        }
+
         enc_len = msg_len - crypto_box_MACBYTES;
 
         bl = InitDataBytesLocker(aTHX_ enc_len);
@@ -2432,6 +2440,10 @@ decrypt_afternm(self, ciphertext, nonce, precalculated_key)
         }
 
         msg_buf = (unsigned char *)SvPV(ciphertext, msg_len);
+
+        if ( msg_len < crypto_box_MACBYTES ) {
+            croak("Invalid ciphertext");
+        }
 
         enc_len = msg_len - crypto_box_MACBYTES;
 
@@ -2828,10 +2840,11 @@ open(self, smsg, pubkey)
 
         msg_buf = (unsigned char *)SvPV(smsg, msg_len);
 
-        enc_len = msg_len - crypto_sign_BYTES;
         if ( msg_len < crypto_sign_BYTES ) {
             croak("Invalid input data");
         }
+
+        enc_len = msg_len - crypto_sign_BYTES;
 
         bl = InitDataBytesLocker(aTHX_ enc_len);
         if ( crypto_sign_open( bl->bytes, (unsigned long long *)&enc_len, msg_buf, msg_len, pkey_buf) == 0 ) {
