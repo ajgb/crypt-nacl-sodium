@@ -34,7 +34,6 @@ is(hex2bin( '41:42:43', max_len => 2 ), 'A',
 my ($a, $b) = ( "abc", "abC");
 
 ok( ! memcmp($a, $b), "memcmp: 'abc' and 'abC' differ");
-is( compare($a, $b), -1, "compare: 'abc' < 'abC'");
 
 for (1 .. 1000) {
     my $bin_len = 1 + random_number(1000);
