@@ -3004,10 +3004,19 @@ to_curve25519_keypair(self, pubkey, seckey)
         }
 
         blp = InitDataBytesLocker(aTHX_ crypto_scalarmult_curve25519_BYTES);
-        bls = InitDataBytesLocker(aTHX_ crypto_scalarmult_curve25519_BYTES);
 
-        crypto_sign_ed25519_pk_to_curve25519( blp->bytes, pkey_buf);
-        crypto_sign_ed25519_sk_to_curve25519( bls->bytes, skey_buf);
+        if ( crypto_sign_ed25519_pk_to_curve25519( blp->bytes, pkey_buf) != 0 ) {
+            sodium_free(blp->bytes);
+            Safefree(blp);
+            croak("Conversion of public key failed");
+        }
+
+        bls = InitDataBytesLocker(aTHX_ crypto_scalarmult_curve25519_BYTES);
+        if ( crypto_sign_ed25519_sk_to_curve25519( bls->bytes, skey_buf) != 0 ) {
+            sodium_free(bls->bytes);
+            Safefree(bls);
+            croak("Conversion of secret key failed");
+        }
 
         mXPUSHs( DataBytesLocker2SV(aTHX_ blp) );
         mXPUSHs( DataBytesLocker2SV(aTHX_ bls) );
@@ -3705,7 +3714,11 @@ key(self, passphrase, salt, ... )
         pwd_buf = (char *)SvPV(passphrase, pwd_len);
 
         bl = InitDataBytesLocker(aTHX_ outlen);
-        crypto_pwhash_scryptsalsa208sha256(bl->bytes, outlen, pwd_buf, pwd_len, salt_buf, opslimit, memlimit);
+        if ( crypto_pwhash_scryptsalsa208sha256(bl->bytes, outlen, pwd_buf, pwd_len, salt_buf, opslimit, memlimit) != 0 ) {
+            sodium_free( bl->bytes );
+            Safefree(bl);
+            croak("Out of memory");
+        }
 
         mXPUSHs( DataBytesLocker2SV(aTHX_ bl) );
 
@@ -3756,7 +3769,11 @@ str(self, passphrase, ... )
         pwd_buf = (char *)SvPV(passphrase, pwd_len);
 
         bl = InitDataBytesLocker(aTHX_ crypto_pwhash_scryptsalsa208sha256_STRBYTES);
-        crypto_pwhash_scryptsalsa208sha256_str(bl->bytes, pwd_buf, pwd_len, opslimit, memlimit);
+        if ( crypto_pwhash_scryptsalsa208sha256_str(bl->bytes, pwd_buf, pwd_len, opslimit, memlimit) != 0 ) {
+            sodium_free( bl->bytes );
+            Safefree(bl);
+            croak("Out of memory");
+        }
         bl->bytes[crypto_pwhash_scryptsalsa208sha256_STRBYTES] = 0;
 
         mXPUSHs( DataBytesLocker2SV(aTHX_ bl) );
