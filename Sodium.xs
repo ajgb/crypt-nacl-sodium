@@ -19,6 +19,11 @@ typedef struct {
 } DataBytesLocker;
 
 typedef struct {
+    int locked;
+    crypto_aead_aes256gcm_state * ctx;
+} CryptNaClSodiumAeadAes256gcmState;
+
+typedef struct {
     crypto_generichash_state * state;
     size_t init_bytes;
 } CryptNaClSodiumGenerichashStream;
@@ -48,6 +53,7 @@ typedef struct {
 } CryptNaClSodiumOnetimeauthStream;
 
 typedef DataBytesLocker * Data__BytesLocker;
+typedef CryptNaClSodiumAeadAes256gcmState * Crypt__NaCl__Sodium__aead__aes256gcmstate;
 typedef CryptNaClSodiumGenerichashStream * Crypt__NaCl__Sodium__generichash__stream;
 typedef CryptNaClSodiumHashSha256Stream * Crypt__NaCl__Sodium__hash__sha256stream;
 typedef CryptNaClSodiumHashSha512Stream * Crypt__NaCl__Sodium__hash__sha512stream;
@@ -102,6 +108,28 @@ STATIC int dup_ ## statetype ## _stream(pTHX_ MAGIC *mg, CLONE_PARAMS *params)\
     return 0;\
 }
 
+STATIC int dup_aead_aes256gcmstate(pTHX_ MAGIC *mg, CLONE_PARAMS *params)
+{
+    CryptNaClSodiumAeadAes256gcmState *new_state;
+    CryptNaClSodiumAeadAes256gcmState *cur_state;
+    size_t sizeof_state = crypto_aead_aes256gcm_statebytes();
+    PERL_UNUSED_VAR(params);
+    cur_state = (CryptNaClSodiumAeadAes256gcmState *)mg->mg_ptr;
+
+    Newx(new_state, 1, CryptNaClSodiumAeadAes256gcmState);
+    if ( new_state == NULL ) {
+        croak("Could not allocate enough memory");
+    }
+    new_state->ctx = sodium_malloc(sizeof_state);
+    if ( new_state->ctx == NULL ) {
+        croak("Could not allocate enough memory");
+    }
+    memcpy(new_state->ctx,cur_state->ctx,sizeof_state);
+
+    mg->mg_ptr = (char *)new_state;
+    return 0;
+}
+
 DUPSTREAM(CryptNaClSodiumGenerichashStream, generichash, (size_t)63U & ~(size_t) 63U, new_stream->init_bytes=cur_stream->init_bytes)
 DUPSTREAM(CryptNaClSodiumHashSha256Stream, hash_sha256, 0, ((void)0))
 DUPSTREAM(CryptNaClSodiumHashSha512Stream, hash_sha512, 0, ((void)0))
@@ -120,6 +148,22 @@ STATIC MGVTBL vtbl_byteslocker = {
 #ifdef MGf_DUP
 # ifdef USE_ITHREADS
     dup_byteslocker,
+# else
+    NULL, /* dup */
+# endif
+#endif
+#ifdef MGf_LOCAL
+    NULL /* local */
+#endif
+};
+STATIC MGVTBL vtbl_aead_aes256gcmstate = {
+    NULL, /* get */ NULL, /* set */ NULL, /* len */ NULL, /* clear */ NULL, /* free */
+#ifdef MGf_COPY
+    NULL, /* copy */
+#endif
+#ifdef MGf_DUP
+# ifdef USE_ITHREADS
+    dup_aead_aes256gcmstate,
 # else
     NULL, /* dup */
 # endif
@@ -309,6 +353,77 @@ static DataBytesLocker* GetBytesLocker(pTHX_ SV* sv)
 
     croak("Failed to get Data::BytesLocker pointer");
     return (DataBytesLocker*)0; /* some compilers insist on a return value */
+}
+
+static CryptNaClSodiumAeadAes256gcmState * InitAeadAes256gcmState(pTHX_ unsigned char * key) {
+    CryptNaClSodiumAeadAes256gcmState *pk;
+    Newx(pk, 1, CryptNaClSodiumAeadAes256gcmState);
+
+    if ( pk == NULL ) {
+        croak("Could not allocate enough memory");
+    }
+
+    pk->ctx = sodium_malloc(crypto_aead_aes256gcm_statebytes());
+
+    if ( pk->ctx == NULL ) {
+        croak("Could not allocate enough memory");
+    }
+
+
+    crypto_aead_aes256gcm_beforenm(pk->ctx, key);
+    pk->locked = 0;
+
+    return pk;
+}
+
+static SV * AeadAes256gcmState2SV(pTHX_ CryptNaClSodiumAeadAes256gcmState *state) {
+    SV *sv = newSV(0);
+    SV *obj = newRV_noinc(sv);
+    SV *default_locked;
+#ifdef USE_ITHREADS
+    MAGIC *mg;
+#endif
+
+    sv_bless(obj, gv_stashpv("Crypt::NaCl::Sodium::aead::aes256gcmstate", 0));
+
+    if ( (default_locked = get_sv("Data::BytesLocker::DEFAULT_LOCKED", 0)) ) {
+        if ( SvTRUE(default_locked) ) {
+            int rc = sodium_mprotect_noaccess((void *)state->ctx);
+
+            if ( rc != 0 ) {
+                croak("Unable to protect AES256GCM precalculated key object");
+            }
+            state->locked = 1;
+        }
+    }
+
+#ifdef USE_ITHREADS
+    mg =
+#endif
+	sv_magicext(sv, NULL, PERL_MAGIC_ext, &vtbl_aead_aes256gcmstate, (const char *)state, 0);
+
+#if defined(USE_ITHREADS) && defined(MGf_DUP)
+    mg->mg_flags |= MGf_DUP;
+#endif
+
+    return obj;
+}
+
+static CryptNaClSodiumAeadAes256gcmState* GetAeadAes256gcmState(pTHX_ SV* sv)
+{
+    MAGIC *mg;
+
+    if (!sv_derived_from(sv, "Crypt::NaCl::Sodium::aead::aes256gcmstate"))
+	croak("Not a reference to a Crypt::NaCl::Sodium::aead::aes256gcmstate object");
+
+    for (mg = SvMAGIC(SvRV(sv)); mg; mg = mg->mg_moremagic) {
+	if (mg->mg_type == PERL_MAGIC_ext && mg->mg_virtual == &vtbl_aead_aes256gcmstate) {
+	    return (CryptNaClSodiumAeadAes256gcmState *)mg->mg_ptr;
+	}
+    }
+
+    croak("Failed to get Crypt::NaCl::Sodium::aead::aes256gcmstate pointer");
+    return (CryptNaClSodiumAeadAes256gcmState*)0; /* some compilers insist on a return value */
 }
 
 static SV * GenerichashStream2SV(pTHX_ CryptNaClSodiumGenerichashStream *stream) {
@@ -1688,6 +1803,13 @@ KEYBYTES(...)
         RETVAL
 
 unsigned int
+AES256GCM_KEYBYTES(...)
+    CODE:
+        RETVAL = crypto_aead_aes256gcm_KEYBYTES;
+    OUTPUT:
+        RETVAL
+
+unsigned int
 NPUBBYTES(...)
     CODE:
         RETVAL = crypto_aead_chacha20poly1305_NPUBBYTES;
@@ -1702,26 +1824,62 @@ IETF_NPUBBYTES(...)
         RETVAL
 
 unsigned int
+AES256GCM_NPUBBYTES(...)
+    CODE:
+        RETVAL = crypto_aead_aes256gcm_NPUBBYTES;
+    OUTPUT:
+        RETVAL
+
+unsigned int
 ABYTES(...)
     CODE:
         RETVAL = crypto_aead_chacha20poly1305_ABYTES;
     OUTPUT:
         RETVAL
 
+unsigned int
+AES256GCM_ABYTES(...)
+    CODE:
+        RETVAL = crypto_aead_aes256gcm_ABYTES;
+    OUTPUT:
+        RETVAL
+
 PROTOTYPES: ENABLE
 
+void
+aes256gcm_is_available(self)
+    SV * self
+    PPCODE:
+    {
+        if ( crypto_aead_aes256gcm_is_available() ) {
+            XSRETURN_YES;
+        }
+        XSRETURN_NO;
+    }
 
 SV *
 keygen(self)
     SV * self
+    ALIAS:
+        aes256gcm_keygen = 1
     INIT:
+        unsigned int key_size;
         DataBytesLocker *bl;
     CODE:
+    {
         PERL_UNUSED_VAR(self);
 
-        bl = InitDataBytesLocker(aTHX_ crypto_aead_chacha20poly1305_KEYBYTES);
-        randombytes_buf(bl->bytes, bl->length);
+        switch(ix) {
+            case 1:
+                key_size = crypto_aead_aes256gcm_KEYBYTES;
+                break;
+            default:
+                key_size = crypto_aead_chacha20poly1305_KEYBYTES;
+        }
+        bl = InitDataBytesLocker(aTHX_ key_size);
+        randombytes_buf(bl->bytes, key_size);
         RETVAL = DataBytesLocker2SV(aTHX_ bl);
+    }
     OUTPUT:
         RETVAL
 
@@ -1731,6 +1889,7 @@ nonce(self, ...)
     PROTOTYPE: $;$
     ALIAS:
         ietf_nonce = 1
+        aes256gcm_nonce = 2
     INIT:
         unsigned int nonce_size;
         DataBytesLocker *bl;
@@ -1740,6 +1899,9 @@ nonce(self, ...)
         switch(ix) {
             case 1:
                 nonce_size = crypto_aead_chacha20poly1305_IETF_NPUBBYTES;
+                break;
+            case 2:
+                nonce_size = crypto_aead_aes256gcm_NPUBBYTES;
                 break;
             default:
                 nonce_size = crypto_aead_chacha20poly1305_NPUBBYTES;
@@ -1784,6 +1946,7 @@ encrypt(self, msg, adata, nonce, key)
     PROTOTYPE: $$$$$
     ALIAS:
         ietf_encrypt = 1
+        aes256gcm_encrypt = 2
     INIT:
         STRLEN msg_len;
         STRLEN adata_len;
@@ -1814,6 +1977,12 @@ encrypt(self, msg, adata, nonce, key)
                 key_size = crypto_aead_chacha20poly1305_KEYBYTES;
                 adlen_size = crypto_aead_chacha20poly1305_ABYTES;
                 encrypt_function = &crypto_aead_chacha20poly1305_ietf_encrypt;
+                break;
+            case 2:
+                nonce_size = crypto_aead_aes256gcm_NPUBBYTES;
+                key_size = crypto_aead_aes256gcm_KEYBYTES;
+                adlen_size = crypto_aead_aes256gcm_ABYTES;
+                encrypt_function = &crypto_aead_aes256gcm_encrypt;
                 break;
             default:
                 nonce_size = crypto_aead_chacha20poly1305_NPUBBYTES;
@@ -1859,6 +2028,7 @@ decrypt(self, msg, adata, nonce, key)
     PROTOTYPE: $$$$
     ALIAS:
         ietf_decrypt = 1
+        aes256gcm_decrypt = 2
     INIT:
         STRLEN msg_len;
         STRLEN adata_len;
@@ -1889,6 +2059,12 @@ decrypt(self, msg, adata, nonce, key)
                 key_size = crypto_aead_chacha20poly1305_KEYBYTES;
                 adlen_size = crypto_aead_chacha20poly1305_ABYTES;
                 decrypt_function = &crypto_aead_chacha20poly1305_ietf_decrypt;
+                break;
+            case 2:
+                nonce_size = crypto_aead_aes256gcm_NPUBBYTES;
+                key_size = crypto_aead_aes256gcm_KEYBYTES;
+                adlen_size = crypto_aead_aes256gcm_ABYTES;
+                decrypt_function = &crypto_aead_aes256gcm_decrypt;
                 break;
             default:
                 nonce_size = crypto_aead_chacha20poly1305_NPUBBYTES;
@@ -1929,6 +2105,210 @@ decrypt(self, msg, adata, nonce, key)
             Safefree(bl);
             croak("Message forged");
         }
+    }
+
+void
+aes256gcm_beforenm(self, key)
+    SV * self
+    SV * key
+    PROTOTYPE: $;%
+    INIT:
+        STRLEN key_len = 0;
+        unsigned char * key_buf = NULL;
+        CryptNaClSodiumAeadAes256gcmState *state;
+    PPCODE:
+    {
+        PERL_UNUSED_VAR(self);
+
+        key_buf = (unsigned char *)SvPV(key, key_len);
+        if ( key_len != crypto_aead_aes256gcm_KEYBYTES ) {
+            croak("Invalid key");
+        }
+
+        state = InitAeadAes256gcmState(aTHX_ key_buf);
+
+        ST(0) = sv_2mortal(AeadAes256gcmState2SV(aTHX_ state));
+
+        XSRETURN(1);
+    }
+
+void
+aes256gcm_encrypt_afternm(self, msg, adata, nonce, precalculated_key)
+    SV * self
+    SV * msg
+    SV * adata
+    SV * nonce
+    SV * precalculated_key
+    PROTOTYPE: $$$$$
+    INIT:
+        STRLEN msg_len;
+        STRLEN adata_len;
+        STRLEN nonce_len;
+        STRLEN enc_len;
+        unsigned char * msg_buf;
+        unsigned char * adata_buf;
+        unsigned char * nonce_buf;
+        CryptNaClSodiumAeadAes256gcmState * precal_key;
+        DataBytesLocker *bl;
+    PPCODE:
+    {
+        PERL_UNUSED_VAR(self);
+
+        if ( GIMME_V == G_VOID ) {
+            XSRETURN_EMPTY;
+        }
+
+        nonce_buf = (unsigned char *)SvPV(nonce, nonce_len);
+        if ( nonce_len != crypto_aead_aes256gcm_NPUBBYTES ) {
+            croak("Invalid nonce");
+        }
+
+        precal_key = GetAeadAes256gcmState(aTHX_ precalculated_key);
+
+        if ( precal_key->locked ) {
+            croak("Unlock AES256GCM precalculated key object before accessing the state");
+        }
+
+        msg_buf = (unsigned char *)SvPV(msg, msg_len);
+
+        adata_buf = (unsigned char *)SvPV(adata, adata_len);
+
+        enc_len = msg_len + crypto_aead_aes256gcm_ABYTES;
+        bl = InitDataBytesLocker(aTHX_ enc_len);
+
+        crypto_aead_aes256gcm_encrypt_afternm( bl->bytes, (unsigned long long *)&enc_len, msg_buf, msg_len,
+            adata_buf, adata_len, NULL, nonce_buf, (const crypto_aead_aes256gcm_state *)precal_key->ctx);
+
+        bl->bytes[enc_len] = '\0';
+        bl->length = enc_len;
+
+        mXPUSHs( DataBytesLocker2SV(aTHX_ bl) );
+        XSRETURN(1);
+    }
+
+void
+aes256gcm_decrypt_afternm(self, msg, adata, nonce, precalculated_key)
+    SV * self
+    SV * msg
+    SV * adata
+    SV * nonce
+    SV * precalculated_key
+    PROTOTYPE: $$$$
+    INIT:
+        STRLEN msg_len;
+        STRLEN adata_len;
+        STRLEN nonce_len;
+        STRLEN enc_len;
+        unsigned char * msg_buf;
+        unsigned char * adata_buf;
+        unsigned char * nonce_buf;
+        CryptNaClSodiumAeadAes256gcmState * precal_key;
+        DataBytesLocker *bl;
+    PPCODE:
+    {
+        PERL_UNUSED_VAR(self);
+
+        if ( GIMME_V == G_VOID ) {
+            XSRETURN_EMPTY;
+        }
+
+        nonce_buf = (unsigned char *)SvPV(nonce, nonce_len);
+        if ( nonce_len != crypto_aead_aes256gcm_NPUBBYTES ) {
+            croak("Invalid nonce");
+        }
+
+        msg_buf = (unsigned char *)SvPV(msg, msg_len);
+
+        if ( msg_len < crypto_aead_aes256gcm_ABYTES ) {
+            croak("Invalid ciphertext");
+        }
+
+        precal_key = GetAeadAes256gcmState(aTHX_ precalculated_key);
+
+        if ( precal_key->locked ) {
+            croak("Unlock AES256GCM precalculated key object before accessing the state");
+        }
+
+        adata_buf = (unsigned char *)SvPV(adata, adata_len);
+
+        enc_len = msg_len;
+        bl = InitDataBytesLocker(aTHX_ enc_len);
+
+        if ( crypto_aead_aes256gcm_decrypt_afternm( bl->bytes, (unsigned long long *)&enc_len, NULL, msg_buf, msg_len, adata_buf, adata_len, nonce_buf, (const crypto_aead_aes256gcm_state *) precal_key->ctx) == 0 ) {
+            bl->bytes[enc_len] = '\0';
+            bl->length = enc_len;
+            mXPUSHs( DataBytesLocker2SV(aTHX_ bl) );
+            XSRETURN(1);
+        }
+        else {
+            sodium_free(bl->bytes);
+            Safefree(bl);
+            croak("Message forged");
+        }
+    }
+
+MODULE = Crypt::NaCl::Sodium        PACKAGE = Crypt::NaCl::Sodium::aead::aes256gcmstate
+
+void
+lock(self)
+    SV * self
+    PREINIT:
+        CryptNaClSodiumAeadAes256gcmState* state = GetAeadAes256gcmState(aTHX_ self);
+    INIT:
+        int rc;
+    PPCODE:
+    {
+        rc = sodium_mprotect_noaccess((void *)state->ctx);
+
+        if (rc == 0 ) {
+            state->locked = 1;
+            XSRETURN_YES;
+        }
+
+        croak("Unable to lock memory: %s", Strerror(errno));
+    }
+
+void
+unlock(self)
+    SV * self
+    PREINIT:
+        CryptNaClSodiumAeadAes256gcmState* state = GetAeadAes256gcmState(aTHX_ self);
+    INIT:
+        int rc;
+    PPCODE:
+    {
+        rc = sodium_mprotect_readonly((void *)state->ctx);
+
+        if (rc == 0 ) {
+            state->locked = 0;
+            XSRETURN_YES;
+        }
+        croak("Unable to unlock memory: %s", Strerror(errno));
+    }
+
+void
+is_locked(self, ...)
+    SV * self
+    PREINIT:
+        CryptNaClSodiumAeadAes256gcmState* state = GetAeadAes256gcmState(aTHX_ self);
+    PPCODE:
+    {
+        if ( state->locked ) {
+            XSRETURN_YES;
+        } else {
+            XSRETURN_NO;
+        }
+    }
+
+void
+DESTROY(self)
+    SV * self
+    PREINIT:
+        CryptNaClSodiumAeadAes256gcmState* state = GetAeadAes256gcmState(aTHX_ self);
+    PPCODE:
+    {
+        sodium_free( state->ctx );
+        Safefree(state);
     }
 
 

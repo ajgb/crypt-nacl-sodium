@@ -106,6 +106,16 @@ use Crypt::NaCl::Sodium qw( :utils );
     $hasher->update("bar");
     is $hasher->clone->final->to_hex, $tdigest->to_hex, "final mac matches";
 }
+{
+    my $crypto_aead = Crypt::NaCl::Sodium->aead;
+    my $key = $crypto_aead->aes256gcm_keygen;
+    my $precal_key = $crypto_aead->aes256gcm_beforenm($key);
+
+    my $tprecal_key = threads->create(sub { $precal_key->lock(); $precal_key->is_locked })->join;
+
+    isnt $precal_key->is_locked, $tprecal_key, "unshared object unaffected by the thread";
+}
+
 
 done_testing();
 
