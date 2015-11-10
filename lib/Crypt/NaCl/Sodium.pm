@@ -178,7 +178,7 @@ __END__
     # Secret-key message authentication (HMAC-SHA256, HMAC-SHA512, HMAC-SHA512/256 )
     my $crypto_auth = $crypto->auth();
 
-    # Authenticated Encryption with Additional Data (ChaCha20/Poly1305 MAC)
+    # Authenticated Encryption with Additional Data (ChaCha20/Poly1305 MAC, AES256-GCM)
     my $crypto_aead = $crypto->aead();
 
     ##########################

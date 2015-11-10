@@ -1,5 +1,5 @@
 # PODNAME: Crypt::NaCl::Sodium::aead
-# ABSTRACT: Authenticated Encryption with Additional Data (ChaCha20/Poly1305 MAC / AES256-GCM)
+# ABSTRACT: Authenticated Encryption with Additional Data (ChaCha20/Poly1305 MAC, AES256-GCM)
 
 =head1 SYNOPSIS
 
