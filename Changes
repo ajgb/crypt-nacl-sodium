@@ -1,6 +1,8 @@
 Revision history for Perl extension Crypt::NaCl::Sodium.
 
 {{$NEXT}}
+
+0.09   2015-11-10 02:15:01
     Require Alien::Sodium v1.0.6.0
     Added following compare and increment utility functions.
     IETF-compatible version of ChaCha20 stream cipher
