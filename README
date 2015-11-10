@@ -3,7 +3,7 @@ NAME
     encryption, decryption, signatures, password hashing and more
 
 VERSION
-    version 0.08
+    version 0.09
 
 SYNOPSIS
         use Crypt::NaCl::Sodium qw( :utils );
@@ -71,6 +71,9 @@ SYNOPSIS
 
         # constant time comparision of strings
         memcmp($a, $b, $length ) or die '$a ne $b';
+
+        # constant time comparision of large numbers
+        compare($x, $y, $length ) == -1 and print '$x < $y';
 
         # overwrite with null bytes
         memzero($a, $b, ...);
@@ -233,6 +236,21 @@ FUNCTIONS
     Otherwise it is required and cannot be greater then the length of the
     shorter of compared variables.
 
+  compare
+        # constant time comparision of large numbers
+        compare($x, $y, $length ) == -1 and print '$x < $y';
+
+    A constant-time version of "memcmp", useful to compare nonces and
+    counters in little-endian format, that plays well with "increment".
+
+    Returns -1 if $x is lower then $y, 0 if $x and $y are identical, or 1 if
+    $x is greater then $y. Both $x and $y are assumed to be numbers encoded
+    in little-endian format.
+
+    The argument $length is optional if variables are of the same length.
+    Otherwise it is required and cannot be greater then the length of the
+    shorter of compared variables.
+
   memzero
         memzero($a, $b, ...);
 
@@ -245,6 +263,15 @@ FUNCTIONS
     Returns an unpredictable number between 0 and optional $upper_bound
     (excluded). If $upper_bound is not specified the maximum value is
     0xffffffff (included).
+
+  increment
+        increment($nonce);
+
+    Increments an arbitrary long unsigned number. Function runs in
+    contstant-time for a given length of number amd considers the number to
+    be encoded in little-endian format.
+
+    This function can be used to increment nonces.
 
   random_bytes
         my $bytes = random_bytes($num_of_bytes);
