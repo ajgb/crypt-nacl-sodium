@@ -19,7 +19,7 @@ SYNOPSIS
         # Secret-key message authentication (HMAC-SHA256, HMAC-SHA512, HMAC-SHA512/256 )
         my $crypto_auth = $crypto->auth();
 
-        # Authenticated Encryption with Additional Data (ChaCha20/Poly1305 MAC)
+        # Authenticated Encryption with Additional Data (ChaCha20/Poly1305 MAC, AES256-GCM)
         my $crypto_aead = $crypto->aead();
 
         ##########################
@@ -133,7 +133,7 @@ METHODS
     Read Crypt::NaCl::Sodium::auth for more details.
 
   aead
-        # Authenticated Encryption with Additional Data (ChaCha20/Poly1305 MAC)
+        # Authenticated Encryption with Additional Data (ChaCha20/Poly1305 MAC, AES256-GCM)
         my $crypto_aead = Crypt::NaCl::Sodium->aead();
 
     Read Crypt::NaCl::Sodium::aead for more details.
@@ -300,7 +300,7 @@ SEE ALSO
         (HMAC-SHA256, HMAC-SHA512, HMAC-SHA512/256 )
 
     *   Crypt::NaCl::Sodium::aead - Authenticated Encryption with Additional
-        Data (ChaCha20/Poly1305 MAC)
+        Data (ChaCha20/Poly1305 MAC, AES256-GCM)
 
     *   Crypt::NaCl::Sodium::box - Public-key authenticated encryption
         (Curve25519/XSalsa20/Poly1305 MAC)
