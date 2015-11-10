@@ -41,6 +41,10 @@ for my $i ( 1 .. 2 ) {
     is($key_str, $key, "stringification works");
     is(ref $key_str, '', "stringified object is plain scalar");
 
+    my $key_bytes = $key->bytes;
+    is($key_str, $key_bytes, "->bytes returns protected bytes");
+    is(ref $key_bytes, '', "...and is plain scalar");
+
     ok($key eq $skey, "key -eq skey");
     ok(! ( $key ne $skey), "key -ne skey");
     ok($key, "-bool key");

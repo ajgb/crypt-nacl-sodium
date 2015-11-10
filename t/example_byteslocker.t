@@ -22,7 +22,7 @@ ok($password_locker->is_locked, "is_locked");
 
 # dies with: "Unlock BytesLocker object before accessing the data"
 eval {
-    print "password: ", $password_locker, "\n";
+    print "password: ", $password_locker->bytes, "\n";
 };
 like($@, qr/^Unlock BytesLocker object before accessing the data/, "cannot access locked bytes");
 

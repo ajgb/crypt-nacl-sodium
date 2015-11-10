@@ -20,7 +20,7 @@
     $password_locker->is_locked or die;
 
     # dies with: "Unlock BytesLocker object before accessing the data"
-    print "password: ", $password_locker, "\n";
+    print "password: ", $password_locker->bytes, "\n";
 
     # unlock the data
     $password_locker->unlock;
@@ -28,8 +28,8 @@
     # as requested locker is unlocked
     $password_locker->is_locked and die;
 
-    # prints the password
-    print "password: ", $password_locker, "\n";
+    # prints the password using overloaded stringification
+    print "password: $password_locker\n";
 
     # Crypt::NaCl::Sodium functions and methods return binary data locked in Data::BytesLocker objects
     my $random_password = random_bytes( 32 );
@@ -134,6 +134,14 @@ Returns the protected data converted into a hexadecimal string.
 B<NOTE:> the C<$locker> object must be unlocked.
 
 Returns regular scalar.
+
+=head2 bytes
+
+    my $bytes = $locker->bytes();
+
+Returns the protected data as regular scalar.
+
+B<NOTE:> the C<$locker> object must be unlocked.
 
 =head1 OVERLOADED OPERATIONS
 

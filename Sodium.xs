@@ -4791,6 +4791,23 @@ to_hex(self)
     CLEANUP:
         sodium_free(hex);
 
+void
+bytes(self)
+    SV * self
+    PREINIT:
+        DataBytesLocker* sbl = GetBytesLocker(aTHX_ self);
+    INIT:
+        SV * pv;
+    PPCODE:
+    {
+        if ( sbl->locked ) {
+            croak("Unlock BytesLocker object before accessing the data");
+        }
+
+        pv = newSVpvn((unsigned char *)sbl->bytes, sbl->length);
+
+        mXPUSHs(pv);
+    }
 
 void
 DESTROY(self)
