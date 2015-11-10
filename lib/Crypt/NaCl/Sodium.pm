@@ -299,7 +299,7 @@ Read L<Crypt::NaCl::Sodium::auth> for more details.
 
 =head2 aead
 
-    # Authenticated Encryption with Additional Data (ChaCha20/Poly1305 MAC)
+    # Authenticated Encryption with Additional Data (ChaCha20/Poly1305 MAC, AES256-GCM)
     my $crypto_aead = Crypt::NaCl::Sodium->aead();
 
 Read L<Crypt::NaCl::Sodium::aead> for more details.
@@ -488,7 +488,7 @@ L<Data::BytesLocker/"unlock"> before accessing.
 
 =item * L<Crypt::NaCl::Sodium::auth> - Secret-key message authentication (HMAC-SHA256, HMAC-SHA512, HMAC-SHA512/256 )
 
-=item * L<Crypt::NaCl::Sodium::aead> - Authenticated Encryption with Additional Data (ChaCha20/Poly1305 MAC)
+=item * L<Crypt::NaCl::Sodium::aead> - Authenticated Encryption with Additional Data (ChaCha20/Poly1305 MAC, AES256-GCM)
 
 =item * L<Crypt::NaCl::Sodium::box> - Public-key authenticated encryption (Curve25519/XSalsa20/Poly1305 MAC)
 
