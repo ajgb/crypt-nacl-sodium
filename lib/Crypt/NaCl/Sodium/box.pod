@@ -181,7 +181,7 @@ Returns L<Data::BytesLocker> objects.
 
 =head2 beforenm
 
-    my $shared_key = $crypto_box->beforenm( $recipient_public_key, $sender_secret_key );
+    my $shared_key = $crypto_box->beforenm( $public_key, $secret_key );
 
 Applications that send several messages to the same receiver
 or receive several messages from the same sender can gain
