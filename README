@@ -3,7 +3,7 @@ NAME
     encryption, decryption, signatures, password hashing and more
 
 VERSION
-    version 0.09
+    version 0.10
 
 SYNOPSIS
         use Crypt::NaCl::Sodium qw( :utils );
@@ -74,6 +74,9 @@ SYNOPSIS
 
         # constant time comparision of large numbers
         compare($x, $y, $length ) == -1 and print '$x < $y';
+
+        # increment nonce
+        increment($nonce);
 
         # overwrite with null bytes
         memzero($a, $b, ...);
@@ -267,9 +270,9 @@ FUNCTIONS
   increment
         increment($nonce);
 
-    Increments an arbitrary long unsigned number. Function runs in
-    contstant-time for a given length of number amd considers the number to
-    be encoded in little-endian format.
+    Increments an arbitrary long unsigned number (in place). Function runs
+    in constant-time for a given length of number and considers the number
+    to be encoded in little-endian format.
 
     This function can be used to increment nonces.
 

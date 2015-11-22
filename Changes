@@ -1,6 +1,7 @@
 Revision history for Perl extension Crypt::NaCl::Sodium.
 
 {{$NEXT}}
+    - Verify if AES256-GCM is available and die in related methods if not.
     - increment() accepts variable list of arguments.
     - cleanup documentation.
 

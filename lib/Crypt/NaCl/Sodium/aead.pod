@@ -247,6 +247,8 @@ B<NOTE:> keep the key confidential.
 
 Returns L<Data::BytesLocker> object.
 
+B<NOTE:> if C<AES256-GCM> is not available this method croaks.
+
 =head3 aes256gcm_beforenm
 
     my $precal_key = $crypto_aead->aes256gcm_beforenm( $key );
@@ -259,6 +261,8 @@ the expanded key.
 
 B<NOTE:> the returned object provides following methods to allow securing the
 access to the expanded key:
+
+B<NOTE:> if C<AES256-GCM> is not available this method croaks.
 
 =head4 lock
 
@@ -308,6 +312,8 @@ rejecting duplicate messages.
 
 Returns L<Data::BytesLocker> object.
 
+B<NOTE:> if C<AES256-GCM> is not available this method croaks.
+
 =head3 aes256gcm_encrypt
 
     my $secret = $crypto_aead->aes256gcm_encrypt($msg, $additional_data, $nonce, $key);
@@ -319,6 +325,8 @@ The length of the C<$secret> is at most equal to the length of C<$msg> +
 L</AES256GCM_ABYTES>.
 
 Returns L<Data::BytesLocker> object.
+
+B<NOTE:> if C<AES256-GCM> is not available this method croaks.
 
 =head4 aes256gcm_encrypt_afternm
 
@@ -347,6 +355,8 @@ The length of the C<$msg> is at most equal to the length of C<$secret> -
 L</AES256GCM_ABYTES>.
 
 Returns L<Data::BytesLocker> object.
+
+B<NOTE:> if C<AES256-GCM> is not available this method croaks.
 
 =head4 aes256gcm_decrypt_afternm
 
@@ -383,6 +393,8 @@ Returns the length of nonce used by C<IETF>-compatible L</"ChaCha20/Poly1305 MAC
 
 Returns the length of nonce used by L</"AES256-GCM"> methods.
 
+B<NOTE:> if C<AES256-GCM> is not available this method croaks.
+
 =head2 KEYBYTES
 
     my $key_length = $crypto_aead->KEYBYTES;
@@ -394,6 +406,8 @@ Returns the length of key used by L</"ChaCha20/Poly1305 MAC"> methods.
     my $key_length = $crypto_aead->AES256GCM_KEYBYTES;
 
 Returns the length of key used by L</"AES256-GCM"> methods.
+
+B<NOTE:> if C<AES256-GCM> is not available this method croaks.
 
 =head2 ABYTES
 
@@ -408,6 +422,8 @@ used by L</"ChaCha20/Poly1305 MAC"> methods.
 
 Returns the maximum of number of additional bytes added to encrypted messages
 used by L</"AES256-GCM"> methods.
+
+B<NOTE:> if C<AES256-GCM> is not available this method croaks.
 
 =head1 ALGORITHM DETAILS
 

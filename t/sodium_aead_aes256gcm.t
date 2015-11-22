@@ -3081,7 +3081,7 @@ my $is_available = $crypto_aead->aes256gcm_is_available;
 ok($is_available >= 0, "can detect if AES256GCM is available");
 
 SKIP: {
-    skip "AES256GCM is not available" unless $is_available;
+    skip "AES256GCM is not available", 1 unless $is_available;
 
     for my $test ( @tests ) {
         my ($key_hex,
@@ -3181,6 +3181,55 @@ SKIP: {
     is($decrypted2->bytes, $msg, "to decrypted the message (using unlocked precalculated key)");
  
 }
+
+SKIP: {
+    skip "AES256GCM is available", 1 if $is_available;
+
+	my @noargs_methods = qw(
+		AES256GCM_KEYBYTES
+		AES256GCM_NPUBBYTES
+		AES256GCM_ABYTES
+		aes256gcm_keygen
+		aes256gcm_nonce
+	);
+	for my $m ( @noargs_methods ) {
+		eval {
+			$crypto_aead->$m();
+		};
+		like($@, qr/AES256-GCM is not supported by this CPU/, "$m is not available");
+	}
+
+	eval {
+		my $ciphertext = $crypto_aead->aes256gcm_encrypt("msg", "", "\0", "\0");
+	};
+	like($@, qr/AES256-GCM is not supported by this CPU/, "aes256gcm_encrypt is not available");
+
+
+	eval {
+		my $plain = $crypto_aead->aes256gcm_decrypt("ciphertext", "", "\0", "\0");
+	};
+	like($@, qr/AES256-GCM is not supported by this CPU/, "aes256gcm_decrypt is not available");
+
+
+	eval {
+		my $precal_key = $crypto_aead->aes256gcm_beforenm("\0");
+	};
+	like($@, qr/AES256-GCM is not supported by this CPU/, "aes256gcm_beforenm is not available");
+
+
+	eval {
+		my $ciphertext = $crypto_aead->aes256gcm_encrypt_afternm("msg", "", "\0", "\0");
+	};
+	like($@, qr/AES256-GCM is not supported by this CPU/, "aes256gcm_encrypt_afternm is not available");
+
+
+	eval {
+		my $plain = $crypto_aead->aes256gcm_decrypt_afternm("ciphertext", "", "\0", "\0");
+	};
+	like($@, qr/AES256-GCM is not supported by this CPU/, "aes256gcm_decrypt_afternm is not available");
+
+}
+
 
 done_testing();
 

@@ -18,10 +18,12 @@ typedef struct {
     int locked;
 } DataBytesLocker;
 
+#if defined(AES256GCM_IS_AVAILABLE)
 typedef struct {
     int locked;
     crypto_aead_aes256gcm_state * ctx;
 } CryptNaClSodiumAeadAes256gcmState;
+#endif
 
 typedef struct {
     crypto_generichash_state * state;
@@ -53,7 +55,9 @@ typedef struct {
 } CryptNaClSodiumOnetimeauthStream;
 
 typedef DataBytesLocker * Data__BytesLocker;
+#if defined(AES256GCM_IS_AVAILABLE)
 typedef CryptNaClSodiumAeadAes256gcmState * Crypt__NaCl__Sodium__aead__aes256gcmstate;
+#endif
 typedef CryptNaClSodiumGenerichashStream * Crypt__NaCl__Sodium__generichash__stream;
 typedef CryptNaClSodiumHashSha256Stream * Crypt__NaCl__Sodium__hash__sha256stream;
 typedef CryptNaClSodiumHashSha512Stream * Crypt__NaCl__Sodium__hash__sha512stream;
@@ -108,6 +112,7 @@ STATIC int dup_ ## statetype ## _stream(pTHX_ MAGIC *mg, CLONE_PARAMS *params)\
     return 0;\
 }
 
+#if defined(AES256GCM_IS_AVAILABLE)
 STATIC int dup_aead_aes256gcmstate(pTHX_ MAGIC *mg, CLONE_PARAMS *params)
 {
     CryptNaClSodiumAeadAes256gcmState *new_state;
@@ -129,6 +134,7 @@ STATIC int dup_aead_aes256gcmstate(pTHX_ MAGIC *mg, CLONE_PARAMS *params)
     mg->mg_ptr = (char *)new_state;
     return 0;
 }
+#endif
 
 DUPSTREAM(CryptNaClSodiumGenerichashStream, generichash, (size_t)63U & ~(size_t) 63U, new_stream->init_bytes=cur_stream->init_bytes)
 DUPSTREAM(CryptNaClSodiumHashSha256Stream, hash_sha256, 0, ((void)0))
@@ -156,6 +162,7 @@ STATIC MGVTBL vtbl_byteslocker = {
     NULL /* local */
 #endif
 };
+#if defined(AES256GCM_IS_AVAILABLE)
 STATIC MGVTBL vtbl_aead_aes256gcmstate = {
     NULL, /* get */ NULL, /* set */ NULL, /* len */ NULL, /* clear */ NULL, /* free */
 #ifdef MGf_COPY
@@ -172,6 +179,7 @@ STATIC MGVTBL vtbl_aead_aes256gcmstate = {
     NULL /* local */
 #endif
 };
+#endif
 STATIC MGVTBL vtbl_generichash = {
     NULL, /* get */ NULL, /* set */ NULL, /* len */ NULL, /* clear */ NULL, /* free */
 #ifdef MGf_COPY
@@ -329,7 +337,7 @@ static SV * DataBytesLocker2SV(pTHX_ DataBytesLocker *bl) {
 #ifdef USE_ITHREADS
     mg =
 #endif
-	sv_magicext(sv, NULL, PERL_MAGIC_ext, &vtbl_byteslocker, (const char *)bl, 0);
+        sv_magicext(sv, NULL, PERL_MAGIC_ext, &vtbl_byteslocker, (const char *)bl, 0);
 
 #if defined(USE_ITHREADS) && defined(MGf_DUP)
     mg->mg_flags |= MGf_DUP;
@@ -343,18 +351,19 @@ static DataBytesLocker* GetBytesLocker(pTHX_ SV* sv)
     MAGIC *mg;
 
     if (!sv_derived_from(sv, "Data::BytesLocker"))
-	croak("Not a reference to a Data::BytesLocker object");
+        croak("Not a reference to a Data::BytesLocker object");
 
     for (mg = SvMAGIC(SvRV(sv)); mg; mg = mg->mg_moremagic) {
-	if (mg->mg_type == PERL_MAGIC_ext && mg->mg_virtual == &vtbl_byteslocker) {
-	    return (DataBytesLocker *)mg->mg_ptr;
-	}
+        if (mg->mg_type == PERL_MAGIC_ext && mg->mg_virtual == &vtbl_byteslocker) {
+            return (DataBytesLocker *)mg->mg_ptr;
+        }
     }
 
     croak("Failed to get Data::BytesLocker pointer");
     return (DataBytesLocker*)0; /* some compilers insist on a return value */
 }
 
+#if defined(AES256GCM_IS_AVAILABLE)
 static CryptNaClSodiumAeadAes256gcmState * InitAeadAes256gcmState(pTHX_ unsigned char * key) {
     CryptNaClSodiumAeadAes256gcmState *pk;
     Newx(pk, 1, CryptNaClSodiumAeadAes256gcmState);
@@ -400,7 +409,7 @@ static SV * AeadAes256gcmState2SV(pTHX_ CryptNaClSodiumAeadAes256gcmState *state
 #ifdef USE_ITHREADS
     mg =
 #endif
-	sv_magicext(sv, NULL, PERL_MAGIC_ext, &vtbl_aead_aes256gcmstate, (const char *)state, 0);
+        sv_magicext(sv, NULL, PERL_MAGIC_ext, &vtbl_aead_aes256gcmstate, (const char *)state, 0);
 
 #if defined(USE_ITHREADS) && defined(MGf_DUP)
     mg->mg_flags |= MGf_DUP;
@@ -414,17 +423,18 @@ static CryptNaClSodiumAeadAes256gcmState* GetAeadAes256gcmState(pTHX_ SV* sv)
     MAGIC *mg;
 
     if (!sv_derived_from(sv, "Crypt::NaCl::Sodium::aead::aes256gcmstate"))
-	croak("Not a reference to a Crypt::NaCl::Sodium::aead::aes256gcmstate object");
+        croak("Not a reference to a Crypt::NaCl::Sodium::aead::aes256gcmstate object");
 
     for (mg = SvMAGIC(SvRV(sv)); mg; mg = mg->mg_moremagic) {
-	if (mg->mg_type == PERL_MAGIC_ext && mg->mg_virtual == &vtbl_aead_aes256gcmstate) {
-	    return (CryptNaClSodiumAeadAes256gcmState *)mg->mg_ptr;
-	}
+        if (mg->mg_type == PERL_MAGIC_ext && mg->mg_virtual == &vtbl_aead_aes256gcmstate) {
+            return (CryptNaClSodiumAeadAes256gcmState *)mg->mg_ptr;
+        }
     }
 
     croak("Failed to get Crypt::NaCl::Sodium::aead::aes256gcmstate pointer");
     return (CryptNaClSodiumAeadAes256gcmState*)0; /* some compilers insist on a return value */
 }
+#endif
 
 static SV * GenerichashStream2SV(pTHX_ CryptNaClSodiumGenerichashStream *stream) {
     SV *sv = newSV(0);
@@ -438,7 +448,7 @@ static SV * GenerichashStream2SV(pTHX_ CryptNaClSodiumGenerichashStream *stream)
 #ifdef USE_ITHREADS
     mg =
 #endif
-	sv_magicext(sv, NULL, PERL_MAGIC_ext, &vtbl_generichash, (const char *)stream, 0);
+        sv_magicext(sv, NULL, PERL_MAGIC_ext, &vtbl_generichash, (const char *)stream, 0);
 
 #if defined(USE_ITHREADS) && defined(MGf_DUP)
     mg->mg_flags |= MGf_DUP;
@@ -452,12 +462,12 @@ static CryptNaClSodiumGenerichashStream* GetGenerichashStream(pTHX_ SV* sv)
     MAGIC *mg;
 
     if (!sv_derived_from(sv, "Crypt::NaCl::Sodium::generichash::stream"))
-	croak("Not a reference to a Crypt::NaCl::Sodium::generichash::stream object");
+        croak("Not a reference to a Crypt::NaCl::Sodium::generichash::stream object");
 
     for (mg = SvMAGIC(SvRV(sv)); mg; mg = mg->mg_moremagic) {
-	if (mg->mg_type == PERL_MAGIC_ext && mg->mg_virtual == &vtbl_generichash) {
-	    return (CryptNaClSodiumGenerichashStream *)mg->mg_ptr;
-	}
+        if (mg->mg_type == PERL_MAGIC_ext && mg->mg_virtual == &vtbl_generichash) {
+            return (CryptNaClSodiumGenerichashStream *)mg->mg_ptr;
+        }
     }
 
     croak("Failed to get Crypt::NaCl::Sodium::generichash::stream pointer");
@@ -477,7 +487,7 @@ static SV * HashSha256Stream2SV(pTHX_ CryptNaClSodiumHashSha256Stream *stream) {
 #ifdef USE_ITHREADS
     mg =
 #endif
-	sv_magicext(sv, NULL, PERL_MAGIC_ext, &vtbl_hash_sha256, (const char *)stream, 0);
+        sv_magicext(sv, NULL, PERL_MAGIC_ext, &vtbl_hash_sha256, (const char *)stream, 0);
 
 #if defined(USE_ITHREADS) && defined(MGf_DUP)
     mg->mg_flags |= MGf_DUP;
@@ -491,12 +501,12 @@ static CryptNaClSodiumHashSha256Stream* GetHashSha256Stream(pTHX_ SV* sv)
     MAGIC *mg;
 
     if (!sv_derived_from(sv, "Crypt::NaCl::Sodium::hash::sha256stream"))
-	croak("Not a reference to a Crypt::NaCl::Sodium::hash::sha256stream object");
+        croak("Not a reference to a Crypt::NaCl::Sodium::hash::sha256stream object");
 
     for (mg = SvMAGIC(SvRV(sv)); mg; mg = mg->mg_moremagic) {
-	if (mg->mg_type == PERL_MAGIC_ext && mg->mg_virtual == &vtbl_hash_sha256) {
-	    return (CryptNaClSodiumHashSha256Stream *)mg->mg_ptr;
-	}
+        if (mg->mg_type == PERL_MAGIC_ext && mg->mg_virtual == &vtbl_hash_sha256) {
+            return (CryptNaClSodiumHashSha256Stream *)mg->mg_ptr;
+        }
     }
 
     croak("Failed to get Crypt::NaCl::Sodium::hash::sha256stream pointer");
@@ -516,7 +526,7 @@ static SV * HashSha512Stream2SV(pTHX_ CryptNaClSodiumHashSha512Stream *stream) {
 #ifdef USE_ITHREADS
     mg =
 #endif
-	sv_magicext(sv, NULL, PERL_MAGIC_ext, &vtbl_hash_sha512, (const char *)stream, 0);
+        sv_magicext(sv, NULL, PERL_MAGIC_ext, &vtbl_hash_sha512, (const char *)stream, 0);
 
 #if defined(USE_ITHREADS) && defined(MGf_DUP)
     mg->mg_flags |= MGf_DUP;
@@ -530,12 +540,12 @@ static CryptNaClSodiumHashSha512Stream* GetHashSha512Stream(pTHX_ SV* sv)
     MAGIC *mg;
 
     if (!sv_derived_from(sv, "Crypt::NaCl::Sodium::hash::sha512stream"))
-	croak("Not a reference to a Crypt::NaCl::Sodium::hash::sha512stream object");
+        croak("Not a reference to a Crypt::NaCl::Sodium::hash::sha512stream object");
 
     for (mg = SvMAGIC(SvRV(sv)); mg; mg = mg->mg_moremagic) {
-	if (mg->mg_type == PERL_MAGIC_ext && mg->mg_virtual == &vtbl_hash_sha512) {
-	    return (CryptNaClSodiumHashSha512Stream *)mg->mg_ptr;
-	}
+        if (mg->mg_type == PERL_MAGIC_ext && mg->mg_virtual == &vtbl_hash_sha512) {
+            return (CryptNaClSodiumHashSha512Stream *)mg->mg_ptr;
+        }
     }
 
     croak("Failed to get Crypt::NaCl::Sodium::hash::sha512stream pointer");
@@ -555,7 +565,7 @@ static SV * AuthHmacsha256Stream2SV(pTHX_ CryptNaClSodiumAuthHmacsha256Stream *s
 #ifdef USE_ITHREADS
     mg =
 #endif
-	sv_magicext(sv, NULL, PERL_MAGIC_ext, &vtbl_auth_hmacsha256, (const char *)stream, 0);
+        sv_magicext(sv, NULL, PERL_MAGIC_ext, &vtbl_auth_hmacsha256, (const char *)stream, 0);
 
 #if defined(USE_ITHREADS) && defined(MGf_DUP)
     mg->mg_flags |= MGf_DUP;
@@ -569,12 +579,12 @@ static CryptNaClSodiumAuthHmacsha256Stream* GetAuthHmacsha256Stream(pTHX_ SV* sv
     MAGIC *mg;
 
     if (!sv_derived_from(sv, "Crypt::NaCl::Sodium::auth::hmacsha256stream"))
-	croak("Not a reference to a Crypt::NaCl::Sodium::auth::hmacsha256stream object");
+        croak("Not a reference to a Crypt::NaCl::Sodium::auth::hmacsha256stream object");
 
     for (mg = SvMAGIC(SvRV(sv)); mg; mg = mg->mg_moremagic) {
-	if (mg->mg_type == PERL_MAGIC_ext && mg->mg_virtual == &vtbl_auth_hmacsha256) {
-	    return (CryptNaClSodiumAuthHmacsha256Stream *)mg->mg_ptr;
-	}
+        if (mg->mg_type == PERL_MAGIC_ext && mg->mg_virtual == &vtbl_auth_hmacsha256) {
+            return (CryptNaClSodiumAuthHmacsha256Stream *)mg->mg_ptr;
+        }
     }
 
     croak("Failed to get Crypt::NaCl::Sodium::auth::hmacsha256stream pointer");
@@ -594,7 +604,7 @@ static SV * AuthHmacsha512Stream2SV(pTHX_ CryptNaClSodiumAuthHmacsha512Stream *s
 #ifdef USE_ITHREADS
     mg =
 #endif
-	sv_magicext(sv, NULL, PERL_MAGIC_ext, &vtbl_auth_hmacsha512, (const char *)stream, 0);
+        sv_magicext(sv, NULL, PERL_MAGIC_ext, &vtbl_auth_hmacsha512, (const char *)stream, 0);
 
 #if defined(USE_ITHREADS) && defined(MGf_DUP)
     mg->mg_flags |= MGf_DUP;
@@ -608,12 +618,12 @@ static CryptNaClSodiumAuthHmacsha512Stream* GetAuthHmacsha512Stream(pTHX_ SV* sv
     MAGIC *mg;
 
     if (!sv_derived_from(sv, "Crypt::NaCl::Sodium::auth::hmacsha512stream"))
-	croak("Not a reference to a Crypt::NaCl::Sodium::auth::hmacsha512stream object");
+        croak("Not a reference to a Crypt::NaCl::Sodium::auth::hmacsha512stream object");
 
     for (mg = SvMAGIC(SvRV(sv)); mg; mg = mg->mg_moremagic) {
-	if (mg->mg_type == PERL_MAGIC_ext && mg->mg_virtual == &vtbl_auth_hmacsha512) {
-	    return (CryptNaClSodiumAuthHmacsha512Stream *)mg->mg_ptr;
-	}
+        if (mg->mg_type == PERL_MAGIC_ext && mg->mg_virtual == &vtbl_auth_hmacsha512) {
+            return (CryptNaClSodiumAuthHmacsha512Stream *)mg->mg_ptr;
+        }
     }
 
     croak("Failed to get Crypt::NaCl::Sodium::auth::hmacsha512stream pointer");
@@ -633,7 +643,7 @@ static SV * AuthHmacsha512256Stream2SV(pTHX_ CryptNaClSodiumAuthHmacsha512256Str
 #ifdef USE_ITHREADS
     mg =
 #endif
-	sv_magicext(sv, NULL, PERL_MAGIC_ext, &vtbl_auth_hmacsha512256, (const char *)stream, 0);
+        sv_magicext(sv, NULL, PERL_MAGIC_ext, &vtbl_auth_hmacsha512256, (const char *)stream, 0);
 
 #if defined(USE_ITHREADS) && defined(MGf_DUP)
     mg->mg_flags |= MGf_DUP;
@@ -647,12 +657,12 @@ static CryptNaClSodiumAuthHmacsha512256Stream* GetAuthHmacsha512256Stream(pTHX_ 
     MAGIC *mg;
 
     if (!sv_derived_from(sv, "Crypt::NaCl::Sodium::auth::hmacsha512256stream"))
-	croak("Not a reference to a Crypt::NaCl::Sodium::auth::hmacsha512256stream object");
+        croak("Not a reference to a Crypt::NaCl::Sodium::auth::hmacsha512256stream object");
 
     for (mg = SvMAGIC(SvRV(sv)); mg; mg = mg->mg_moremagic) {
-	if (mg->mg_type == PERL_MAGIC_ext && mg->mg_virtual == &vtbl_auth_hmacsha512256) {
-	    return (CryptNaClSodiumAuthHmacsha512256Stream *)mg->mg_ptr;
-	}
+        if (mg->mg_type == PERL_MAGIC_ext && mg->mg_virtual == &vtbl_auth_hmacsha512256) {
+            return (CryptNaClSodiumAuthHmacsha512256Stream *)mg->mg_ptr;
+        }
     }
 
     croak("Failed to get Crypt::NaCl::Sodium::auth::hmacsha512256stream pointer");
@@ -672,7 +682,7 @@ static SV * OnetimeauthStream2SV(pTHX_ CryptNaClSodiumOnetimeauthStream *stream)
 #ifdef USE_ITHREADS
     mg =
 #endif
-	sv_magicext(sv, NULL, PERL_MAGIC_ext, &vtbl_onetimeauth, (const char *)stream, 0);
+        sv_magicext(sv, NULL, PERL_MAGIC_ext, &vtbl_onetimeauth, (const char *)stream, 0);
 
 #if defined(USE_ITHREADS) && defined(MGf_DUP)
     mg->mg_flags |= MGf_DUP;
@@ -686,12 +696,12 @@ static CryptNaClSodiumOnetimeauthStream* GetOnetimeauthStream(pTHX_ SV* sv)
     MAGIC *mg;
 
     if (!sv_derived_from(sv, "Crypt::NaCl::Sodium::onetimeauth::stream"))
-	croak("Not a reference to a Crypt::NaCl::Sodium::onetimeauth::stream object");
+        croak("Not a reference to a Crypt::NaCl::Sodium::onetimeauth::stream object");
 
     for (mg = SvMAGIC(SvRV(sv)); mg; mg = mg->mg_moremagic) {
-	if (mg->mg_type == PERL_MAGIC_ext && mg->mg_virtual == &vtbl_onetimeauth) {
-	    return (CryptNaClSodiumOnetimeauthStream *)mg->mg_ptr;
-	}
+        if (mg->mg_type == PERL_MAGIC_ext && mg->mg_virtual == &vtbl_onetimeauth) {
+            return (CryptNaClSodiumOnetimeauthStream *)mg->mg_ptr;
+        }
     }
 
     croak("Failed to get Crypt::NaCl::Sodium::onetimeauth::stream pointer");
@@ -1805,7 +1815,33 @@ KEYBYTES(...)
 unsigned int
 AES256GCM_KEYBYTES(...)
     CODE:
+#if defined(AES256GCM_IS_AVAILABLE)
         RETVAL = crypto_aead_aes256gcm_KEYBYTES;
+#else
+        croak("AES256-GCM is not supported by this CPU");
+#endif
+    OUTPUT:
+        RETVAL
+
+unsigned int
+AES256GCM_NPUBBYTES(...)
+    CODE:
+#if defined(AES256GCM_IS_AVAILABLE)
+        RETVAL = crypto_aead_aes256gcm_NPUBBYTES;
+#else
+        croak("AES256-GCM is not supported by this CPU");
+#endif
+    OUTPUT:
+        RETVAL
+
+unsigned int
+AES256GCM_ABYTES(...)
+    CODE:
+#if defined(AES256GCM_IS_AVAILABLE)
+        RETVAL = crypto_aead_aes256gcm_ABYTES;
+#else
+        croak("AES256-GCM is not supported by this CPU");
+#endif
     OUTPUT:
         RETVAL
 
@@ -1824,23 +1860,9 @@ IETF_NPUBBYTES(...)
         RETVAL
 
 unsigned int
-AES256GCM_NPUBBYTES(...)
-    CODE:
-        RETVAL = crypto_aead_aes256gcm_NPUBBYTES;
-    OUTPUT:
-        RETVAL
-
-unsigned int
 ABYTES(...)
     CODE:
         RETVAL = crypto_aead_chacha20poly1305_ABYTES;
-    OUTPUT:
-        RETVAL
-
-unsigned int
-AES256GCM_ABYTES(...)
-    CODE:
-        RETVAL = crypto_aead_aes256gcm_ABYTES;
     OUTPUT:
         RETVAL
 
@@ -1871,7 +1893,11 @@ keygen(self)
 
         switch(ix) {
             case 1:
+#if defined(AES256GCM_IS_AVAILABLE)
                 key_size = crypto_aead_aes256gcm_KEYBYTES;
+#else
+                croak("AES256-GCM is not supported by this CPU");
+#endif
                 break;
             default:
                 key_size = crypto_aead_chacha20poly1305_KEYBYTES;
@@ -1901,7 +1927,11 @@ nonce(self, ...)
                 nonce_size = crypto_aead_chacha20poly1305_IETF_NPUBBYTES;
                 break;
             case 2:
+#if defined(AES256GCM_IS_AVAILABLE)
                 nonce_size = crypto_aead_aes256gcm_NPUBBYTES;
+#else
+                croak("AES256-GCM is not supported by this CPU");
+#endif
                 break;
             default:
                 nonce_size = crypto_aead_chacha20poly1305_NPUBBYTES;
@@ -1979,10 +2009,14 @@ encrypt(self, msg, adata, nonce, key)
                 encrypt_function = &crypto_aead_chacha20poly1305_ietf_encrypt;
                 break;
             case 2:
+#if defined(AES256GCM_IS_AVAILABLE)
                 nonce_size = crypto_aead_aes256gcm_NPUBBYTES;
                 key_size = crypto_aead_aes256gcm_KEYBYTES;
                 adlen_size = crypto_aead_aes256gcm_ABYTES;
                 encrypt_function = &crypto_aead_aes256gcm_encrypt;
+#else
+                croak("AES256-GCM is not supported by this CPU");
+#endif
                 break;
             default:
                 nonce_size = crypto_aead_chacha20poly1305_NPUBBYTES;
@@ -2061,10 +2095,14 @@ decrypt(self, msg, adata, nonce, key)
                 decrypt_function = &crypto_aead_chacha20poly1305_ietf_decrypt;
                 break;
             case 2:
+#if defined(AES256GCM_IS_AVAILABLE)
                 nonce_size = crypto_aead_aes256gcm_NPUBBYTES;
                 key_size = crypto_aead_aes256gcm_KEYBYTES;
                 adlen_size = crypto_aead_aes256gcm_ABYTES;
                 decrypt_function = &crypto_aead_aes256gcm_decrypt;
+#else
+                croak("AES256-GCM is not supported by this CPU");
+#endif
                 break;
             default:
                 nonce_size = crypto_aead_chacha20poly1305_NPUBBYTES;
@@ -2115,11 +2153,13 @@ aes256gcm_beforenm(self, key)
     INIT:
         STRLEN key_len = 0;
         unsigned char * key_buf = NULL;
+#if defined(AES256GCM_IS_AVAILABLE)
         CryptNaClSodiumAeadAes256gcmState *state;
+#endif
     PPCODE:
     {
         PERL_UNUSED_VAR(self);
-
+#if defined(AES256GCM_IS_AVAILABLE)
         key_buf = (unsigned char *)SvPV(key, key_len);
         if ( key_len != crypto_aead_aes256gcm_KEYBYTES ) {
             croak("Invalid key");
@@ -2130,6 +2170,9 @@ aes256gcm_beforenm(self, key)
         ST(0) = sv_2mortal(AeadAes256gcmState2SV(aTHX_ state));
 
         XSRETURN(1);
+#else
+        croak("AES256-GCM is not supported by this CPU");
+#endif
     }
 
 void
@@ -2148,11 +2191,14 @@ aes256gcm_encrypt_afternm(self, msg, adata, nonce, precalculated_key)
         unsigned char * msg_buf;
         unsigned char * adata_buf;
         unsigned char * nonce_buf;
+#if defined(AES256GCM_IS_AVAILABLE)
         CryptNaClSodiumAeadAes256gcmState * precal_key;
+#endif
         DataBytesLocker *bl;
     PPCODE:
     {
         PERL_UNUSED_VAR(self);
+#if defined(AES256GCM_IS_AVAILABLE)
 
         if ( GIMME_V == G_VOID ) {
             XSRETURN_EMPTY;
@@ -2183,7 +2229,11 @@ aes256gcm_encrypt_afternm(self, msg, adata, nonce, precalculated_key)
         bl->length = enc_len;
 
         mXPUSHs( DataBytesLocker2SV(aTHX_ bl) );
+
         XSRETURN(1);
+#else
+        croak("AES256-GCM is not supported by this CPU");
+#endif
     }
 
 void
@@ -2202,11 +2252,14 @@ aes256gcm_decrypt_afternm(self, msg, adata, nonce, precalculated_key)
         unsigned char * msg_buf;
         unsigned char * adata_buf;
         unsigned char * nonce_buf;
+#if defined(AES256GCM_IS_AVAILABLE)
         CryptNaClSodiumAeadAes256gcmState * precal_key;
+#endif
         DataBytesLocker *bl;
     PPCODE:
     {
         PERL_UNUSED_VAR(self);
+#if defined(AES256GCM_IS_AVAILABLE)
 
         if ( GIMME_V == G_VOID ) {
             XSRETURN_EMPTY;
@@ -2245,6 +2298,9 @@ aes256gcm_decrypt_afternm(self, msg, adata, nonce, precalculated_key)
             Safefree(bl);
             croak("Message forged");
         }
+#else
+        croak("AES256-GCM is not supported by this CPU");
+#endif
     }
 
 MODULE = Crypt::NaCl::Sodium        PACKAGE = Crypt::NaCl::Sodium::aead::aes256gcmstate
@@ -2252,12 +2308,14 @@ MODULE = Crypt::NaCl::Sodium        PACKAGE = Crypt::NaCl::Sodium::aead::aes256g
 void
 lock(self)
     SV * self
-    PREINIT:
-        CryptNaClSodiumAeadAes256gcmState* state = GetAeadAes256gcmState(aTHX_ self);
-    INIT:
-        int rc;
     PPCODE:
     {
+        int rc;
+#if defined(AES256GCM_IS_AVAILABLE)
+        CryptNaClSodiumAeadAes256gcmState* state;
+
+        state = GetAeadAes256gcmState(aTHX_ self);
+
         rc = sodium_mprotect_noaccess((void *)state->ctx);
 
         if (rc == 0 ) {
@@ -2266,17 +2324,22 @@ lock(self)
         }
 
         croak("Unable to lock memory: %s", Strerror(errno));
+#else
+        croak("AES256-GCM is not supported by this CPU");
+#endif
     }
 
 void
 unlock(self)
     SV * self
-    PREINIT:
-        CryptNaClSodiumAeadAes256gcmState* state = GetAeadAes256gcmState(aTHX_ self);
-    INIT:
-        int rc;
     PPCODE:
     {
+        int rc;
+#if defined(AES256GCM_IS_AVAILABLE)
+        CryptNaClSodiumAeadAes256gcmState* state;
+
+        state = GetAeadAes256gcmState(aTHX_ self);
+
         rc = sodium_mprotect_readonly((void *)state->ctx);
 
         if (rc == 0 ) {
@@ -2284,31 +2347,43 @@ unlock(self)
             XSRETURN_YES;
         }
         croak("Unable to unlock memory: %s", Strerror(errno));
+#else
+        croak("AES256-GCM is not supported by this CPU");
+#endif
     }
 
 void
 is_locked(self, ...)
     SV * self
-    PREINIT:
-        CryptNaClSodiumAeadAes256gcmState* state = GetAeadAes256gcmState(aTHX_ self);
     PPCODE:
     {
+#if defined(AES256GCM_IS_AVAILABLE)
+        CryptNaClSodiumAeadAes256gcmState* state;
+
+        state = GetAeadAes256gcmState(aTHX_ self);
         if ( state->locked ) {
             XSRETURN_YES;
         } else {
             XSRETURN_NO;
         }
+#else
+        croak("AES256-GCM is not supported by this CPU");
+#endif
     }
 
 void
 DESTROY(self)
     SV * self
-    PREINIT:
-        CryptNaClSodiumAeadAes256gcmState* state = GetAeadAes256gcmState(aTHX_ self);
     PPCODE:
     {
+#if defined(AES256GCM_IS_AVAILABLE)
+        CryptNaClSodiumAeadAes256gcmState* state;
+        state = GetAeadAes256gcmState(aTHX_ self);
         sodium_free( state->ctx );
         Safefree(state);
+#else
+        croak("AES256-GCM is not supported by this CPU");
+#endif
     }
 
 
