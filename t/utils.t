@@ -163,5 +163,13 @@ increment($bl_nonce);
 is($bl_nonce->to_hex, "0001ff000000000000000000000000000000000000000000",
     "incremented ff00ff000... (Data::BytesLocker)");
 
+$nonce = "\0" x 24;
+$bl_nonce = Data::BytesLocker->new(scalar("\0" x 24));
+increment( $nonce, $bl_nonce );
+is(bin2hex($nonce), "010000000000000000000000000000000000000000000000",
+    "incremented 000... (scalar)");
+is($bl_nonce->to_hex, "010000000000000000000000000000000000000000000000",
+    "incremented 000... (Data::BytesLocker)");
+
 done_testing();
 
