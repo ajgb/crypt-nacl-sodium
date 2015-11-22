@@ -3,41 +3,41 @@ Revision history for Perl extension Crypt::NaCl::Sodium.
 {{$NEXT}}
 
 0.09   2015-11-10 02:15:01
-    Require Alien::Sodium v1.0.6.0
-    Added following compare and increment utility functions.
-    IETF-compatible version of ChaCha20 stream cipher
-    Added support for AES256-GCM.
-    Data::BytesLocker object have bytes() method.
-    box, secretbox, aead verify the minimum length of decrypted ciphertext.
+    - Data::BytesLocker bytes() method added.
+    - box, secretbox and aead verify the minimum length of ciphertext.
+    - Require Alien::Sodium v1.0.6.0 (to enable new features)
+    - Added following compare and increment utility functions.
+    - IETF-compatible version of ChaCha20 stream cipher
+    - Added support for AES256-GCM.
 
 0.08   2015-07-17 00:15:13
-    Require Alien::Sodium v1.0.3.1
+    - Require Alien::Sodium v1.0.3.1
 
 0.07   2015-07-13 22:37:05
-    Allow to specify library and include directory paths
-        if pre-installed libsodium is to be used [gh#1]
-    Minor documentaton changes
+    - Allow to specify library and include directory paths
+  if pre-installed libsodium is to be used [gh#1]
+    - Minor documentation changes
 
 0.06   2015-05-20 22:37:45
-    Build changes to locate libsodium.a if pkg-config fails
-    Fix tests failure on OpenBSD which comes with Math::BigInt v1.89_01
-    Fix warning on older perls that warned on ref as lvalue in substr
+    - Build changes to locate libsodium.a if pkg-config fails
+    - Fix tests failure on OpenBSD which comes with Math::BigInt v1.89_01
+    - Fix warning on older perls that warned on ref as lvalue in substr
 
 0.05   2015-05-19 22:37:36
-    Statically linked libsodium.a
+    - Statically linked libsodium.a
 
 0.04   2015-05-18 00:31:37
-    BSDs do not come with mempcpy
-    Fix some compiler warnings
+    - BSDs do not come with mempcpy
+    - Fix some compiler warnings
 
 0.03   2015-05-12 22:26:26
-    Add Alien::Sodium to configure requirements
-    Correct label for crypto_scalarmult->base
+    - Add Alien::Sodium to configure requirements
+    - Correct label for crypto_scalarmult->base
 
 0.02   2015-05-12 01:33:29
-    Add provides for indexing .pod files
-    Minor documentaton fixes
+    - Add provides for indexing .pod files
+    - Minor documentation fixes
 
 0.01   2015-05-12 00:43:48
-	Initial version.
+    - Initial version.
 
