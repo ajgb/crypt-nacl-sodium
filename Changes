@@ -1,6 +1,7 @@
 Revision history for Perl extension Crypt::NaCl::Sodium.
 
 {{$NEXT}}
+    - increment() accepts variable list of arguments.
 
 0.09   2015-11-10 02:15:01
     - Data::BytesLocker bytes() method added.

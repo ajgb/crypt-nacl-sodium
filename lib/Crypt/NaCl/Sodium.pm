@@ -234,6 +234,9 @@ __END__
     # constant time comparision of large numbers
     compare($x, $y, $length ) == -1 and print '$x < $y';
 
+    # increment nonce
+    increment($nonce);
+
     # overwrite with null bytes
     memzero($a, $b, ...);
 
@@ -452,8 +455,8 @@ If C<$upper_bound> is not specified the maximum value is C<0xffffffff>
 
     increment($nonce);
 
-Increments an arbitrary long unsigned number. Function runs in contstant-time
-for a given length of number amd considers the number to be encoded in
+Increments an arbitrary long unsigned number (in place). Function runs in constant-time
+for a given length of number and considers the number to be encoded in
 little-endian format.
 
 This function can be used to increment nonces.
