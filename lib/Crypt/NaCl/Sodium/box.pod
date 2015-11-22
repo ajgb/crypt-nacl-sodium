@@ -242,7 +242,7 @@ of C<$mac> is L</MACBYTES>.
 
 Returns L<Data::BytesLocker> object.
 
-=head2 encrypt_afternm
+=head3 encrypt_afternm
 
     # combined mode - MAC and encrypted message stored together
     my $secret = $crypto_box->encrypt_afternm($msg, $nonce,
@@ -252,18 +252,7 @@ Returns L<Data::BytesLocker> object.
     my ($mac, $ciphertext) = $crypto_box->encrypt_afternm($msg, $nonce,
         $shared_key);
 
-Encrypts the plaintext message using given C<$nonce> and pre-calculated
-C<$shared_key> (as returned by L</beforenm>).
-
-In scalar context works in combined mode, where MAC and encrypted message are stored
-together.
-The length of the C<$secret> equals the length of C<$msg> + L</MACBYTES>.
-
-In list context the C<$mac> and C<$ciphertext> are returned separately.
-The length of the C<$ciphertext> equals the length of C<$msg>, while length
-of C<$mac> is L</MACBYTES>.
-
-Returns L<Data::BytesLocker> object.
+Same as above but encrypts using pre-calculated C<$shared_key> (as returned by L</beforenm>).
 
 =head2 decrypt
 
@@ -287,6 +276,21 @@ The length of the C<$msg> equals the length of C<$secret> - L</MACBYTES>.
 
 Returns L<Data::BytesLocker> object.
 
+=head3 decrypt_afternm
+
+    my $msg;
+    eval {
+        $msg = $crypto_box->decrypt_afternm($secret, $nonce,
+            $shared_key);
+    };
+    if ( $@ ) {
+        warn "Message forged!";
+    } else {
+        print "Decrypted message: $msg\n";
+    }
+
+Same as above but decrypts using pre-calculated C<$shared_key> (as returned by L</beforenm>).
+
 =head2 decrypt_detached
 
     my $msg;
@@ -309,29 +313,7 @@ The length of the C<$msg> equals the length of C<$ciphertext>.
 
 Returns L<Data::BytesLocker> object.
 
-=head2 decrypt_afternm
-
-    my $msg;
-    eval {
-        $msg = $crypto_box->decrypt_afternm($secret, $nonce,
-            $shared_key);
-    };
-    if ( $@ ) {
-        warn "Message forged!";
-    } else {
-        print "Decrypted message: $msg\n";
-    }
-
-Verify and decrypt the secret message using given C<$nonce> and pre-calculated
-C<$shared_key> (as returned by L</beforenm>).
-
-Function croaks if the verification fails. Otherwise returns the decrypted message.
-
-The length of the C<$msg> equals the length of C<$secret> - L</MACBYTES>.
-
-Returns L<Data::BytesLocker> object.
-
-=head2 decrypt_detached_afternm
+=head3 decrypt_detached_afternm
 
     my $msg;
     eval {
@@ -344,15 +326,7 @@ Returns L<Data::BytesLocker> object.
         print "Decrypted message: $msg\n";
     }
 
-Verify and decrypt the secret message C<$ciphertext> authenticated with C<$mac>
-using given C<$nonce> and pre-calculated C<$shared_key> (as returned by
-L</beforenm>).
-
-Function croaks if the verification fails. Otherwise returns the decrypted message.
-
-The length of the C<$msg> equals the length of C<$ciphertext>.
-
-Returns L<Data::BytesLocker> object.
+Same as above but decrypts using pre-calculated C<$shared_key> (as returned by L</beforenm>).
 
 =head1 CONSTANTS
 

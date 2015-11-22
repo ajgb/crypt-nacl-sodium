@@ -93,6 +93,7 @@ eval {
 like($@, qr/^Unlock BytesLocker object before accessing the data/, "cannot access locked bytes");
 ok($locker1->unlock, "...but can unlock");
 is($locker1->to_hex, bin2hex("readonly protected data"), "->to_hex eq bin2hex");
+is($locker1->bytes, "readonly protected data", "data is accessible");
 
 eval {
     my $locker2 = Data::BytesLocker->new("readonly protected data", wipe => 1 );

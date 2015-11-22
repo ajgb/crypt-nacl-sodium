@@ -44,6 +44,10 @@
     $password_locker->lock;
     $random_password->lock;
 
+    # wipe out the memory and destroy the object
+    undef $password_locker;
+    undef $random_password;
+
 =head1 DESCRIPTION
 
 Heartbleed was a serious vulnerability in OpenSSL. The ability to read
