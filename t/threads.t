@@ -106,8 +106,11 @@ use Crypt::NaCl::Sodium qw( :utils );
     $hasher->update("bar");
     is $hasher->clone->final->to_hex, $tdigest->to_hex, "final mac matches";
 }
-{
+
+SKIP: {
     my $crypto_aead = Crypt::NaCl::Sodium->aead;
+    skip "AES256GCM is not available", 1 unless $crypto_aead->aes256gcm_is_available;
+
     my $key = $crypto_aead->aes256gcm_keygen;
     my $precal_key = $crypto_aead->aes256gcm_beforenm($key);
 
