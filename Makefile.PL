@@ -141,7 +141,7 @@ EOF
 
     close($test_file);
 
-    my @include_dirs = map { s/\s+$//; $_ } grep { length } split(/\-I/, $include_dirs);
+    my @include_dirs = map { s/^\s+//; s/\s+$//; $_ } grep { length } split(/\-I/, $include_dirs);
 
     my $file_obj = eval {
         $cb->compile(
