@@ -1,6 +1,8 @@
 Revision history for Perl extension Crypt::NaCl::Sodium.
 
 {{$NEXT}}
+
+1.0.6.1 2015-11-25 23:48:38
     - Fix chacha20_ietf_xor_ic on 32bit platforms
 
 1.0.6.0 2015-11-22 22:57:54
