@@ -3844,7 +3844,7 @@ str(self, passphrase, ... )
         pwd_buf = (char *)SvPV(passphrase, pwd_len);
 
         bl = InitDataBytesLocker(aTHX_ crypto_pwhash_scryptsalsa208sha256_STRBYTES);
-        if ( crypto_pwhash_scryptsalsa208sha256_str(bl->bytes, pwd_buf, pwd_len, opslimit, memlimit) != 0 ) {
+        if ( crypto_pwhash_scryptsalsa208sha256_str((char *)bl->bytes, pwd_buf, pwd_len, opslimit, memlimit) != 0 ) {
             sodium_free( bl->bytes );
             Safefree(bl);
             croak("Out of memory");
@@ -4816,7 +4816,6 @@ xor_ic(self, msg, nonce, ic, key)
     ALIAS:
         chacha20_xor_ic = 1
         salsa20_xor_ic = 2
-        chacha20_ietf_xor_ic = 3
     INIT:
         STRLEN msg_len;
         STRLEN nonce_len;
@@ -4848,11 +4847,6 @@ xor_ic(self, msg, nonce, ic, key)
                 key_size = crypto_stream_salsa20_KEYBYTES;
                 xor_ic_function = &crypto_stream_salsa20_xor_ic;
                 break;
-            case 3:
-                nonce_size = crypto_stream_chacha20_IETF_NONCEBYTES;
-                key_size = crypto_stream_chacha20_KEYBYTES;
-                xor_ic_function = &crypto_stream_chacha20_ietf_xor_ic;
-                break;
             default:
                 nonce_size = crypto_stream_NONCEBYTES;
                 key_size = crypto_stream_KEYBYTES;
@@ -4876,6 +4870,52 @@ xor_ic(self, msg, nonce, ic, key)
         bl = InitDataBytesLocker(aTHX_ msg_len);
 
         (*xor_ic_function)( bl->bytes, msg_buf, msg_len, nonce_buf, bc, key_buf);
+
+        mXPUSHs( DataBytesLocker2SV(aTHX_ bl) );
+        XSRETURN(1);
+    }
+
+void
+chacha20_ietf_xor_ic(self, msg, nonce, ic, key)
+    SV * self
+    SV * msg
+    SV * nonce
+    SV * ic
+    SV * key
+    INIT:
+        STRLEN msg_len;
+        STRLEN nonce_len;
+        unsigned int bc;
+        STRLEN key_len;
+        unsigned char * msg_buf;
+        unsigned char * nonce_buf;
+        unsigned char * key_buf;
+        DataBytesLocker *bl;
+    PPCODE:
+    {
+        PERL_UNUSED_VAR(self);
+
+        if ( GIMME_V == G_VOID ) {
+            XSRETURN_EMPTY;
+        }
+
+        bc = SvUV(ic);
+
+        nonce_buf = (unsigned char *)SvPV(nonce, nonce_len);
+        if ( nonce_len != crypto_stream_chacha20_IETF_NONCEBYTES ) {
+            croak("Invalid nonce");
+        }
+
+        key_buf = (unsigned char *)SvPV(key, key_len);
+        if ( key_len != crypto_stream_chacha20_KEYBYTES ) {
+            croak("Invalid key");
+        }
+
+        msg_buf = (unsigned char *)SvPV(msg, msg_len);
+
+        bl = InitDataBytesLocker(aTHX_ msg_len);
+
+        crypto_stream_chacha20_ietf_xor_ic( bl->bytes, msg_buf, msg_len, nonce_buf, bc, key_buf);
 
         mXPUSHs( DataBytesLocker2SV(aTHX_ bl) );
         XSRETURN(1);

@@ -1,6 +1,7 @@
 Revision history for Perl extension Crypt::NaCl::Sodium.
 
 {{$NEXT}}
+    - Fix chacha20_ietf_xor_ic on 32bit platforms
 
 1.0.6.0 2015-11-22 22:57:54
     - Verify if AES256-GCM is available and die in related methods if not.
