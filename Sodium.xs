@@ -2548,7 +2548,11 @@ beforenm(self, pubkey, seckey)
 
         bl = InitDataBytesLocker(aTHX_ crypto_box_BEFORENMBYTES);
 
-        crypto_box_beforenm(bl->bytes, pkey_buf, skey_buf);
+        if ( crypto_box_beforenm(bl->bytes, pkey_buf, skey_buf) != 0 ) {
+            sodium_free(bl->bytes);
+            Safefree(bl);
+            croak("Failed to pre-calculate key");
+        }
 
         RETVAL = DataBytesLocker2SV(aTHX_ bl);
     }
@@ -2646,8 +2650,16 @@ encrypt(self, msg, nonce, recipient_pubkey, sender_seckey)
             bl = InitDataBytesLocker(aTHX_ msg_len);
             blm = InitDataBytesLocker(aTHX_ crypto_box_MACBYTES);
 
-            crypto_box_detached( bl->bytes, blm->bytes, (unsigned char *)msg_buf,
-                (unsigned long long) msg_len, nonce_buf, pkey_buf, skey_buf);
+            if ( crypto_box_detached( bl->bytes, blm->bytes, (unsigned char *)msg_buf,
+                (unsigned long long) msg_len, nonce_buf, pkey_buf, skey_buf) != 0 ) {
+
+                sodium_free(bl->bytes);
+                Safefree(bl);
+                sodium_free(blm->bytes);
+                Safefree(blm);
+
+                croak("Failed to encrypt data");
+            }
             mXPUSHs( DataBytesLocker2SV(aTHX_ blm) );
             mXPUSHs( DataBytesLocker2SV(aTHX_ bl) );
             XSRETURN(2);
@@ -2657,8 +2669,11 @@ encrypt(self, msg, nonce, recipient_pubkey, sender_seckey)
             enc_len = crypto_box_MACBYTES + msg_len;
             bl = InitDataBytesLocker(aTHX_ enc_len);
 
-            crypto_box_easy( bl->bytes, msg_buf, msg_len,
-                 nonce_buf, pkey_buf, skey_buf);
+            if ( crypto_box_easy( bl->bytes, msg_buf, msg_len, nonce_buf, pkey_buf, skey_buf) != 0 ) {
+                sodium_free(bl->bytes);
+                Safefree(bl);
+                croak("Failed to encrypt data");
+            }
 
             mXPUSHs( DataBytesLocker2SV(aTHX_ bl) );
             XSRETURN(1);
@@ -4453,7 +4468,11 @@ shared_secret(self, secret_key, public_key)
 
         bl = InitDataBytesLocker(aTHX_ crypto_scalarmult_BYTES);
 
-        crypto_scalarmult( bl->bytes, skey_buf, pkey_buf);
+        if ( crypto_scalarmult( bl->bytes, skey_buf, pkey_buf) != 0 ) {
+            sodium_free(bl->bytes);
+            Safefree(bl);
+            croak("Failed to calculate shared secret");
+        }
 
         mXPUSHs( DataBytesLocker2SV(aTHX_ bl) );
         XSRETURN(1);
