@@ -332,6 +332,12 @@ static SV * DataBytesLocker2SV(pTHX_ DataBytesLocker *bl) {
             }
             bl->locked = 1;
         }
+    } else {
+        int rc = sodium_mprotect_readonly((void *)bl->bytes);
+
+        if ( rc != 0 ) {
+            croak("Unable to protect BytesLocker object");
+        }
     }
 
 #ifdef USE_ITHREADS
