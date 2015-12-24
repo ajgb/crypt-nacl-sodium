@@ -3,7 +3,7 @@ NAME
     encryption, decryption, signatures, password hashing and more
 
 VERSION
-    version 1.0.6.1
+    version 1.0.7.0
 
 SYNOPSIS
         use Crypt::NaCl::Sodium qw( :utils );
@@ -74,9 +74,6 @@ SYNOPSIS
 
         # constant time comparision of large numbers
         compare($x, $y, $length ) == -1 and print '$x < $y';
-
-        # increment nonce
-        increment($nonce);
 
         # overwrite with null bytes
         memzero($a, $b, ...);
@@ -230,7 +227,7 @@ FUNCTIONS
     or when "max_len" bytes have been written.
 
   memcmp
-        memcmp($a, $b, $length ) or die '$a ne $b';
+        memcmp($a, $b, $length ) or die "\$a ne \$b for length: $length";
 
     Compares strings in constant-time. Returns true if they match, false
     otherwise.
@@ -239,8 +236,11 @@ FUNCTIONS
     Otherwise it is required and cannot be greater then the length of the
     shorter of compared variables.
 
+    NOTE: "memcmp" in Data::BytesLocker provides the same functionality.
+
+        $locker->memcmp($b, $length) or die "\$locker ne \$b for length: $length";
+
   compare
-        # constant time comparision of large numbers
         compare($x, $y, $length ) == -1 and print '$x < $y';
 
     A constant-time version of "memcmp", useful to compare nonces and
@@ -253,6 +253,10 @@ FUNCTIONS
     The argument $length is optional if variables are of the same length.
     Otherwise it is required and cannot be greater then the length of the
     shorter of compared variables.
+
+    NOTE: "compare" in Data::BytesLocker provides the same functionality.
+
+        $locker->compare($y, $length) == -1 and print "\$locker < \$y for length: $length";
 
   memzero
         memzero($a, $b, ...);
@@ -268,13 +272,14 @@ FUNCTIONS
     0xffffffff (included).
 
   increment
-        increment($nonce);
+        increment($nonce, ...);
 
-    Increments an arbitrary long unsigned number (in place). Function runs
-    in constant-time for a given length of number and considers the number
+    NOTE: This function is deprecated and will be removed in next version.
+    Please use "increment" in Data::BytesLocker.
+
+    Increments an arbitrary long unsigned number(s) (in place). Function
+    runs in constant-time for a given length of arguments and considers them
     to be encoded in little-endian format.
-
-    This function can be used to increment nonces.
 
   random_bytes
         my $bytes = random_bytes($num_of_bytes);
