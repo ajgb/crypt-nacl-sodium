@@ -1,6 +1,10 @@
 Revision history for Perl extension Crypt::NaCl::Sodium.
 
 {{$NEXT}}
+    - New methods added to Data::BytesLocker: is_zero(), increment(), add(), clone().
+    - Helper methods memcmp(), compare() added to Data::BytesLocker
+    - Require Alien::Sodium v1.0.7.0 (to enable new features)
+    - DEPRECATED: increment() function - use Data::BytesLocker's increment method
 
 1.0.6.1 2015-11-25 23:48:38
     - Fix chacha20_ietf_xor_ic on 32bit platforms
