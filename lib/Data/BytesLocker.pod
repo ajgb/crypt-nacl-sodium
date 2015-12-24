@@ -157,6 +157,30 @@ Returns the protected data as regular scalar.
 
 B<NOTE:> the C<$locker> object must be unlocked.
 
+=head2 memcmp
+
+    $locker->memcmp($bytes, $length ) or die "\$locker ne \$bytes for length: $length";
+
+Compares strings in constant-time. Returns true if they match, false otherwise.
+
+The argument C<$length> is optional if length of C<$bytes> is equal to the
+length of the data stored in C<$locker>. Otherwise it is required and cannot
+be greater then the length of the shorter of compared variables.
+
+=head2 compare
+
+    $nonce->compare( $number, $length ) == -1 and print "\$nonce < \$number for length: $length";
+
+A constant-time version of L</memcmp>, useful to compare nonces and counters
+in little-endian format, that plays well with L</increment>.
+
+Returns C<-1> if C<$nonce> is lower then C<$number>, C<0> if C<$nonce> and
+C<$number> are identical, or C<1> if C<$nonce> is greater then C<$number>.
+Both C<$nonce> and C<$number> are assumed to be numbers encoded in little-endian format.
+
+The argument C<$length> is optional if variables are of the same length. Otherwise it is
+required and cannot be greater then the length of the shorter of compared variables.
+
 =head1 OVERLOADED OPERATIONS
 
 Only operations listed below are supported.

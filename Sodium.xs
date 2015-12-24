@@ -755,7 +755,7 @@ memcmp(left, right, length = 0)
             if ( length > left_len ) {
                 croak("First argument is shorter then requested length");
             }
-            if ( length > right_len ) {
+            else if ( length > right_len ) {
                 croak("Second argument is shorter then requested length");
             }
         }
@@ -794,7 +794,7 @@ compare(left, right, length = 0)
             if ( length > left_len ) {
                 croak("First argument is shorter then requested length");
             }
-            if ( length > right_len ) {
+            else if ( length > right_len ) {
                 croak("Second argument is shorter then requested length");
             }
         }
@@ -5339,6 +5339,109 @@ bytes(self)
         pv = newSVpvn((unsigned char *)sbl->bytes, sbl->length);
 
         mXPUSHs(pv);
+    }
+
+void
+memcmp(self, bytes, length = 0)
+    SV * self
+    SV * bytes
+    unsigned long length
+    PREINIT:
+        DataBytesLocker* sbl = GetBytesLocker(aTHX_ self);
+    INIT:
+        unsigned char * bytes_buf;
+        STRLEN bytes_len;
+    PPCODE:
+    {
+        if ( GIMME_V == G_VOID ) {
+            XSRETURN_EMPTY;
+        }
+
+        if ( sbl->locked ) {
+            croak("Unlock BytesLocker object before accessing the data");
+        }
+
+        if (sv_derived_from(bytes, "Data::BytesLocker")) {
+            DataBytesLocker* rbl = GetBytesLocker(aTHX_ bytes);
+            if ( rbl->locked ) {
+                croak("Unlock BytesLocker object before accessing the data");
+            }
+            bytes_buf = rbl->bytes;
+            bytes_len = rbl->length;
+        }
+        else {
+            bytes_buf = (unsigned char *)SvPV(bytes, bytes_len);
+        }
+
+        if ( length == 0 ) {
+            if ( sbl->length != bytes_len ) {
+                croak("Variables of unequal length cannot be automatically compared. Please provide the length argument");
+            }
+            length = bytes_len;
+        } else {
+            if ( length > sbl->length ) {
+                croak("The data is shorter then requested length");
+            }
+            else if ( length > bytes_len ) {
+                croak("The argument is shorter then requested length");
+            }
+        }
+
+        if ( sodium_memcmp(sbl->bytes, bytes_buf, length) == 0 ) {
+            XSRETURN_YES;
+        } else {
+            XSRETURN_NO;
+        }
+    }
+
+
+void
+compare(self, num, length = 0)
+    SV * self
+    SV * num
+    unsigned long length
+    PREINIT:
+        DataBytesLocker* sbl = GetBytesLocker(aTHX_ self);
+    INIT:
+        unsigned char * num_buf;
+        STRLEN num_len;
+    PPCODE:
+    {
+        if ( GIMME_V == G_VOID ) {
+            XSRETURN_EMPTY;
+        }
+
+        if ( sbl->locked ) {
+            croak("Unlock BytesLocker object before accessing the data");
+        }
+
+        if (sv_derived_from(num, "Data::BytesLocker")) {
+            DataBytesLocker* rbl = GetBytesLocker(aTHX_ num);
+            if ( rbl->locked ) {
+                croak("Unlock BytesLocker object before accessing the data");
+            }
+            num_buf = rbl->bytes;
+            num_len = rbl->length;
+        }
+        else {
+            num_buf = (unsigned char *)SvPV(num, num_len);
+        }
+
+        if ( length == 0 ) {
+            if ( sbl->length != num_len ) {
+                croak("Variables of unequal length cannot be automatically compared. Please provide the length argument");
+            }
+            length = num_len;
+        } else {
+            if ( length > sbl->length ) {
+                croak("The data is shorter then requested length");
+            }
+            else if ( length > num_len ) {
+                croak("The argument is shorter then requested length");
+            }
+        }
+
+        XSRETURN_IV( sodium_compare(sbl->bytes, num_buf, length) );
     }
 
 void

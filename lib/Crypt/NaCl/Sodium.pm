@@ -413,16 +413,19 @@ found or when C<max_len> bytes have been written.
 
 =head2 memcmp
 
-    memcmp($a, $b, $length ) or die '$a ne $b';
+    memcmp($a, $b, $length ) or die "\$a ne \$b for length: $length";
 
 Compares strings in constant-time. Returns true if they match, false otherwise.
 
 The argument C<$length> is optional if variables are of the same length. Otherwise it is
 required and cannot be greater then the length of the shorter of compared variables.
 
+B<NOTE:> L<Data::BytesLocker/"memcmp"> provides the same functionality.
+
+    $locker->memcmp($b, $length) or die "\$locker ne \$b for length: $length";
+
 =head2 compare
 
-    # constant time comparision of large numbers
     compare($x, $y, $length ) == -1 and print '$x < $y';
 
 A constant-time version of L</memcmp>, useful to compare nonces and counters
@@ -434,6 +437,10 @@ assumed to be numbers encoded in little-endian format.
 
 The argument C<$length> is optional if variables are of the same length. Otherwise it is
 required and cannot be greater then the length of the shorter of compared variables.
+
+B<NOTE:> L<Data::BytesLocker/"compare"> provides the same functionality.
+
+    $locker->compare($y, $length) == -1 and print "\$locker < \$y for length: $length";
 
 =head2 memzero
 

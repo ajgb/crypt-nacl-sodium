@@ -148,5 +148,58 @@ is($locker3->length, $var_len, "->length works");
     like($@, qr/^Unlock BytesLocker object before accessing the data/, "cannot access locked bytes");
 }
 
+{ # compare
+    my $a = Data::BytesLocker->new("abc");
+    my $b = "abC";
+
+    ok( ! $a->memcmp($b), "memcmp: 'abc' and 'abC' differ");
+
+    for (1 .. 1000) {
+        my $bin_len = 1 + random_number(1000);
+        my $buf1 = random_bytes($bin_len);
+        my $buf2 = random_bytes($bin_len);
+        my $buf1_rev = Data::BytesLocker->new(scalar reverse $buf1);
+        my $buf2_rev = reverse $buf2;
+        ok($buf1_rev->memcmp($buf2_rev, $bin_len) * $buf1->compare($buf2, $bin_len) >= 0,
+            "compare correct with length=$bin_len");
+        is($buf2->compare($buf2->bytes, $bin_len), 0, "compare() equality correct with length=$bin_len");
+    }
+
+    eval {
+        my $res = $a->memcmp("abcde");
+    };
+    like($@, qr/^Variables of unequal length/, "memcmp: variables of unequal length cannot be compared without length specified");
+
+    eval {
+        my $res = $a->compare("ab");
+    };
+    like($@, qr/^Variables of unequal length/, "compare: variables of unequal length cannot be compared without length specified");
+
+
+    ok( $a->memcmp("abc", 2), "memcmp: first two chars are equal");
+    is( $a->compare("abc", 2), 0, "compare: first two chars are equal");
+
+    eval {
+        my $res = $a->memcmp("abcd", 4);
+    };
+    like($@, qr/^The data is shorter/, "memcmp: length=4 > ab");
+
+    eval {
+        my $res = $a->compare("abcd", 4);
+    };
+    like($@, qr/^The data is shorter/, "compare: length=4 > ab");
+
+    eval {
+        my $res = $a->memcmp("ab", 3);
+    };
+    like($@, qr/^The argument is shorter/, "memcmp: length=3 > ab");
+
+
+    eval {
+        my $res = $a->compare("ab", 3);
+    };
+    like($@, qr/^The argument is shorter/, "compare: length=3 > ab");
+}
+
 done_testing();
 
