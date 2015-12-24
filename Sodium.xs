@@ -5445,6 +5445,26 @@ compare(self, num, length = 0)
     }
 
 void
+is_zero(self, ...)
+    SV * self
+    PREINIT:
+        DataBytesLocker* sbl = GetBytesLocker(aTHX_ self);
+    INIT:
+        SV * pv;
+    PPCODE:
+    {
+        if ( sbl->locked ) {
+            croak("Unlock BytesLocker object before accessing the data");
+        }
+
+        if ( sodium_is_zero(sbl->bytes, sbl->length) == 1 ) {
+            XSRETURN_YES;
+        }
+        XSRETURN_NO;
+    }
+
+
+void
 DESTROY(self)
     SV * self
     PREINIT:

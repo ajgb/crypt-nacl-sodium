@@ -43,6 +43,9 @@
     # clone the data into new object
     my $copy = $password_locker->clone;
 
+    # check if the data contains zero bits only
+    $next_nonce->is_zero and print "back to square zero\n";
+
     # always lock the data once done using it
     $password_locker->lock;
     $random_password->lock;
@@ -156,6 +159,15 @@ Returns regular scalar.
 Returns the protected data as regular scalar.
 
 B<NOTE:> the C<$locker> object must be unlocked.
+
+=head2 is_zero
+
+    if ( $locker->is_zero ) {
+        print "data contains zero bits only\n";
+    }
+
+Returns true if the C<$locker> object contains zero bits only.
+Runs in constant-time for objects of the same length.
 
 =head2 memcmp
 
