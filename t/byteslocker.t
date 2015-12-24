@@ -201,5 +201,65 @@ is($locker3->length, $var_len, "->length works");
     like($@, qr/^The argument is shorter/, "compare: length=3 > ab");
 }
 
+{ # sodium_increment
+    my $nonce = Data::BytesLocker->new(
+        scalar("\xff" x 6) . scalar("\xfe" x (24 - 6))
+    );
+    my $next_nonce = $nonce->increment();
+    is($next_nonce->to_hex, "000000000000fffefefefefefefefefefefefefefefefefe", "increment() (xFF x 6)");
+
+    $nonce = Data::BytesLocker->new(
+        scalar("\xff" x 10) . scalar("\xfe" x (24 - 10))
+    );
+    $next_nonce = $nonce->increment();
+    is($next_nonce->to_hex, "00000000000000000000fffefefefefefefefefefefefefe", "increment() (xFF x 10)");
+
+
+    $nonce = Data::BytesLocker->new(
+        scalar("\xff" x 22) . scalar("\xfe" x (24 - 22))
+    );
+    $next_nonce = $nonce->increment();
+    is($next_nonce->to_hex, "00000000000000000000000000000000000000000000fffe", "increment() (xFF x 22)");
+}
+{ # sodium_add
+    my $bin_len = random_number(1_000);
+    my $buf1 = random_bytes($bin_len);
+    my $buf2 = $buf1->clone;
+    my $buf_add = Data::BytesLocker->new(scalar("\0" x $bin_len));
+    ok($buf_add->is_zero, "is_zero detects null data");
+    my $j = random_number(10_000);
+    for ( my $i = 0; $i < $j; $i++ ) {
+        $buf1 = $buf1->increment();
+        $buf_add = $buf_add->increment();
+    }
+    ok(!$buf_add->is_zero, "is_zero detects not null data");
+    $buf2 = $buf2->add($buf_add);
+    ok($buf2->compare($buf1) == 0, "add(\$num) result as expected");
+
+    my $nonce = Data::BytesLocker->new(
+        scalar("\xff" x 6) . scalar("\xfe" x (24 - 6))
+    );
+    $nonce = $nonce->add($nonce, 7);
+    $nonce = $nonce->add($nonce, 8);
+    is($nonce->to_hex, "fcfffffffffffbfdfefefefefefefefefefefefefefefefe",
+        "add(\$nonce, 7) followed by add(\$nonce, 8)");
+
+    $nonce = Data::BytesLocker->new(
+        scalar("\xff" x 10) . scalar("\xfe" x (24 - 10))
+    );
+    $nonce = $nonce->add($nonce, 11);
+    $nonce = $nonce->add($nonce, 12);
+
+    is($nonce->to_hex, "fcfffffffffffffffffffbfdfefefefefefefefefefefefe",
+        "add(\$nonce, 11) followed by add(\$nonce, 12)");
+
+    $nonce = Data::BytesLocker->new(
+        scalar("\xff" x 22) . scalar("\xfe" x (24 - 22))
+    );
+    $nonce = $nonce->add($nonce, 23);
+    $nonce = $nonce->add($nonce, 24);
+    is($nonce->to_hex, "fcfffffffffffffffffffffffffffffffffffffffffffbfd",
+        "add(\$nonce, 23) followed by add(\$nonce, 24)");
+}
 done_testing();
 

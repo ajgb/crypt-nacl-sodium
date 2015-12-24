@@ -115,61 +115,28 @@ like($@, qr/^Invalid length/, "at least 1 random byte needs to be requested");
 my $nonce = "\0" x 24;
 increment($nonce);
 is(bin2hex($nonce), "010000000000000000000000000000000000000000000000",
-    "incremented 000... (scalar)");
+    "incremented 000...");
 
 $nonce = chr(0xff) x 24;
 increment($nonce);
 is(bin2hex($nonce), "000000000000000000000000000000000000000000000000",
-    "incremented fff... (scalar)");
+    "incremented fff...");
 
 substr($nonce, 1, 1, chr(1));
 increment($nonce);
 is(bin2hex($nonce), "010100000000000000000000000000000000000000000000",
-    "incremented 0001000... (scalar)");
+    "incremented 0001000...");
 
 substr($nonce, 1, 1, chr(0));
 increment($nonce);
 is(bin2hex($nonce), "020000000000000000000000000000000000000000000000",
-    "incremented 01000... (scalar)");
+    "incremented 01000...");
 
 substr($nonce, 0, 1, chr(0xff));
 substr($nonce, 2, 1, chr(0xff));
 increment($nonce);
 is(bin2hex($nonce), "0001ff000000000000000000000000000000000000000000",
-    "incremented ff00ff000... (scalar)");
-
-my $bl_nonce = Data::BytesLocker->new(scalar("\0" x 24));
-increment($bl_nonce);
-is($bl_nonce->to_hex, "010000000000000000000000000000000000000000000000",
-    "incremented 000... (Data::BytesLocker)");
-
-$bl_nonce = Data::BytesLocker->new(scalar(chr(0xff) x 24));
-increment($bl_nonce);
-is($bl_nonce->to_hex, "000000000000000000000000000000000000000000000000",
-    "incremented fff... (Data::BytesLocker)");
-
-$bl_nonce = Data::BytesLocker->new(hex2bin("000100000000000000000000000000000000000000000000"));
-increment($bl_nonce);
-is($bl_nonce->to_hex, "010100000000000000000000000000000000000000000000",
-    "incremented 0001000... (Data::BytesLocker)");
-
-$bl_nonce = Data::BytesLocker->new(hex2bin("010000000000000000000000000000000000000000000000"));
-increment($bl_nonce);
-is($bl_nonce->to_hex, "020000000000000000000000000000000000000000000000",
-    "incremented 01000... (Data::BytesLocker)");
-
-$bl_nonce = Data::BytesLocker->new(hex2bin("ff00ff000000000000000000000000000000000000000000"));
-increment($bl_nonce);
-is($bl_nonce->to_hex, "0001ff000000000000000000000000000000000000000000",
-    "incremented ff00ff000... (Data::BytesLocker)");
-
-$nonce = "\0" x 24;
-$bl_nonce = Data::BytesLocker->new(scalar("\0" x 24));
-increment( $nonce, $bl_nonce );
-is(bin2hex($nonce), "010000000000000000000000000000000000000000000000",
-    "incremented 000... (scalar)");
-is($bl_nonce->to_hex, "010000000000000000000000000000000000000000000000",
-    "incremented 000... (Data::BytesLocker)");
+    "incremented ff00ff000...");
 
 done_testing();
 

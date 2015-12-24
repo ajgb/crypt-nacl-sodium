@@ -4975,7 +4975,6 @@ new(class, bytes, ...)
     OUTPUT:
         RETVAL
 
-
 SV *
 _overload_mult(self, other, swapped)
     SV * self
@@ -5442,6 +5441,94 @@ compare(self, num, length = 0)
         }
 
         XSRETURN_IV( sodium_compare(sbl->bytes, num_buf, length) );
+    }
+
+void
+increment(self)
+    SV * self
+    PREINIT:
+        DataBytesLocker* sbl = GetBytesLocker(aTHX_ self);
+    INIT:
+        SV * pv;
+        DataBytesLocker *bl;
+    PPCODE:
+    {
+        if ( GIMME_V == G_VOID ) {
+            XSRETURN_EMPTY;
+        }
+
+        if ( sbl->locked ) {
+            croak("Unlock BytesLocker object before accessing the data");
+        }
+
+        bl = InitDataBytesLocker(aTHX_ sbl->length);
+
+        memcpy(bl->bytes, sbl->bytes, sbl->length);
+
+        sodium_increment(bl->bytes, sbl->length);
+
+        mXPUSHs( DataBytesLocker2SV(aTHX_ bl) );
+
+        XSRETURN(1);
+    }
+
+void
+add(self, num, ...)
+    SV * self
+    SV * num
+    PREINIT:
+        DataBytesLocker* sbl = GetBytesLocker(aTHX_ self);
+    INIT:
+        unsigned char * num_buf;
+        STRLEN num_len;
+        STRLEN inc_len;
+        DataBytesLocker *bl;
+    PPCODE:
+    {
+        if ( GIMME_V == G_VOID ) {
+            XSRETURN_EMPTY;
+        }
+
+        if ( sbl->locked ) {
+            croak("Unlock BytesLocker object before accessing the data");
+        }
+
+        if (sv_derived_from(num, "Data::BytesLocker")) {
+            DataBytesLocker* rbl = GetBytesLocker(aTHX_ num);
+            if ( rbl->locked ) {
+                croak("Unlock BytesLocker object before accessing the data");
+            }
+            num_buf = rbl->bytes;
+            num_len = rbl->length;
+        }
+        else {
+            num_buf = (unsigned char *)SvPV(num, num_len);
+        }
+
+        if ( items == 3 ) {
+            inc_len = (STRLEN)SvUV(ST(2));
+            if ( inc_len > sbl->length ) {
+                croak("The data is shorter then requested length");
+            }
+            else if ( inc_len > num_len ) {
+                croak("The argument is shorter then requested length");
+            }
+        } else {
+            if ( sbl->length != num_len ) {
+                croak("Length of argument has to be equal to the length of data. Please provide the length argument");
+            }
+            inc_len = num_len;
+        }
+
+        bl = InitDataBytesLocker(aTHX_ sbl->length);
+
+        memcpy(bl->bytes, sbl->bytes, sbl->length);
+
+        sodium_add( bl->bytes, num_buf, inc_len );
+
+        mXPUSHs( DataBytesLocker2SV(aTHX_ bl) );
+
+        XSRETURN(1);
     }
 
 void

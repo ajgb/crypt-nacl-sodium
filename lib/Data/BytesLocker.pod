@@ -43,6 +43,12 @@
     # clone the data into new object
     my $copy = $password_locker->clone;
 
+    # nonce increment
+    my $next_nonce = $nonce->increment;
+
+    # add number
+    my $next_nonce = $nonce->add( $step );
+
     # check if the data contains zero bits only
     $next_nonce->is_zero and print "back to square zero\n";
 
@@ -192,6 +198,32 @@ Both C<$nonce> and C<$number> are assumed to be numbers encoded in little-endian
 
 The argument C<$length> is optional if variables are of the same length. Otherwise it is
 required and cannot be greater then the length of the shorter of compared variables.
+
+=head2 increment
+
+    my $next_nonce = $nonce->increment();
+
+Increments an arbitrary long unsigned number. Method runs in constant-time
+for a given length of locked data and considers it to be encoded in
+little-endian format.
+
+This method is meant to be used to increment nonces and counters.
+
+Returns the incremented object.
+
+=head2 add
+
+    my $next_nonce = $nonce->add($number, $length);
+
+Method computes C<($nonce + $number) mod 2 ^ (8 * $length)> in constant time for
+a given length and returns the result of that computation.
+Both C<$nonce> and C<$number> are assumed to be numbers encoded in little-endian format.
+
+The argument C<$length> is optional if variables are of the same length. Otherwise it is
+required and cannot be greater then the length of the shorter of compared variables.
+
+This method is meant to be used to increment nonces and counters using specified
+step.
 
 =head1 OVERLOADED OPERATIONS
 

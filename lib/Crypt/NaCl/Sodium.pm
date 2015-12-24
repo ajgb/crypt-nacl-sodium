@@ -234,9 +234,6 @@ __END__
     # constant time comparision of large numbers
     compare($x, $y, $length ) == -1 and print '$x < $y';
 
-    # increment nonce
-    increment($nonce);
-
     # overwrite with null bytes
     memzero($a, $b, ...);
 
@@ -460,13 +457,14 @@ If C<$upper_bound> is not specified the maximum value is C<0xffffffff>
 
 =head2 increment
 
-    increment($nonce);
+    increment($nonce, ...);
 
-Increments an arbitrary long unsigned number (in place). Function runs in constant-time
-for a given length of number and considers the number to be encoded in
+B<NOTE:> This function is deprecated and will be removed in next version. Please
+use L<Data::BytesLocker/"increment">.
+
+Increments an arbitrary long unsigned number(s) (in place). Function runs in constant-time
+for a given length of arguments and considers them to be encoded in
 little-endian format.
-
-This function can be used to increment nonces.
 
 =head2 random_bytes
 
