@@ -812,22 +812,14 @@ increment(...)
     {
         for ( i = 0; i < items; i++ ) {
             if (sv_derived_from(ST(i), "Data::BytesLocker")) {
-                DataBytesLocker* sbl = GetBytesLocker(aTHX_ ST(i));
-                if ( sbl->locked ) {
-                    croak("Unlock BytesLocker object before accessing the data");
-                }
-                number_buf = sbl->bytes;
-                len = sbl->length;
+                croak("This function does not handle BytesLocker objects");
             }
-            else {
-                number_buf = (unsigned char *)SvPV(ST(i), len);
-            }
+            number_buf = (unsigned char *)SvPV(ST(i), len);
 
             sodium_increment(number_buf, len);
         }
         XSRETURN_EMPTY;
     }
-
 
 void
 memzero(...)
