@@ -5205,6 +5205,28 @@ _overload_nomethod(self, ...)
         croak("Operation \"%s\" is not supported", operator);
     }
 
+SV *
+clone(self)
+    SV * self
+    PREINIT:
+        DataBytesLocker* sbl = GetBytesLocker(aTHX_ self);
+    INIT:
+        DataBytesLocker *bl;
+    CODE:
+    {
+        if ( sbl->locked ) {
+            croak("Unlock BytesLocker object before accessing the data");
+        }
+
+        bl = InitDataBytesLocker(aTHX_ sbl->length);
+
+        memcpy(bl->bytes, sbl->bytes, sbl->length);
+
+        RETVAL = DataBytesLocker2SV(aTHX_ bl);
+    }
+    OUTPUT:
+        RETVAL
+
 void
 lock(self)
     SV * self

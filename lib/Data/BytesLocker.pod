@@ -40,6 +40,9 @@
     # helper function to convert into hexadecimal string
     print "random password: ", $random_password->to_hex, "\n";
 
+    # clone the data into new object
+    my $copy = $password_locker->clone;
+
     # always lock the data once done using it
     $password_locker->lock;
     $random_password->lock;
@@ -47,6 +50,7 @@
     # wipe out the memory and destroy the object
     undef $password_locker;
     undef $random_password;
+    undef $copy;
 
 =head1 DESCRIPTION
 
@@ -101,6 +105,12 @@ the object is locked it cannot be accessed as well.
 
 C<Data::BytesLocker> object when used in string context return the protected
 data.  See L</OVERLOADED OPERATIONS> for more details.
+
+=head2 clone
+
+    my $cloned = $locker->clone;
+
+Returns new data object which will contain the copied data from C<$locker>.
 
 =head2 lock
 
