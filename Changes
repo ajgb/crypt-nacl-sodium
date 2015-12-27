@@ -1,6 +1,7 @@
 Revision history for Perl extension Crypt::NaCl::Sodium.
 
 {{$NEXT}}
+    - Use Alien::Sodium v1.0.8.0
 
 1.0.7.0 2015-12-24 02:44:37
     - New methods added to Data::BytesLocker: is_zero(), increment(), add(), clone().

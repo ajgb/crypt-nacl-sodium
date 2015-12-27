@@ -7,7 +7,7 @@ use ExtUtils::CBuilder;
 use Getopt::Std;
 use Config;
 
-my $aliensodium_version = '1.0.7.0';
+my $aliensodium_version = '1.0.8.0';
 
 my %opts;
 getopt('L:I:', \%opts) or die usage();
